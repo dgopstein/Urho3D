@@ -322,7 +322,7 @@ void Run(const Vector<String>& arguments)
     String rootNodeName;
 
     unsigned flags =
-        aiProcess_ConvertToLeftHanded |
+        aiProcess_ConvertToLeftHanded |             // NOLINT(hicpp-signed-bitwise)
         aiProcess_JoinIdenticalVertices |
         aiProcess_Triangulate |
         aiProcess_GenSmoothNormals |
@@ -549,12 +549,12 @@ void Run(const Vector<String>& arguments)
         }
 
         if (command == "model")
-            ExportModel(outFile, scene_->mFlags & AI_SCENE_FLAGS_INCOMPLETE);
+            ExportModel(outFile, scene_->mFlags & (unsigned)AI_SCENE_FLAGS_INCOMPLETE);
 
         if (command == "anim")
         {
             noMaterials_ = true;
-            ExportAnimation(outFile, scene_->mFlags & AI_SCENE_FLAGS_INCOMPLETE);
+            ExportAnimation(outFile, scene_->mFlags & (unsigned)AI_SCENE_FLAGS_INCOMPLETE);
         }
         if (command == "scene" || command == "node")
         {
@@ -588,7 +588,7 @@ void Run(const Vector<String>& arguments)
         }
         if (numLodArguments < 4)
             ErrorExit("Must define at least 2 LOD levels");
-        if (!(numLodArguments & 1))
+        if (!(numLodArguments & 1u))
             ErrorExit("No output file defined");
 
         for (unsigned i = 1; i < numLodArguments + 1; ++i)
@@ -597,7 +597,7 @@ void Run(const Vector<String>& arguments)
                 outFile = GetInternalPath(arguments[i]);
             else
             {
-                if (i & 1)
+                if (i & 1u)
                     lodDistances.Push(Max(ToFloat(arguments[i]), 0.0f));
                 else
                     modelNames.Push(GetInternalPath(arguments[i]));
