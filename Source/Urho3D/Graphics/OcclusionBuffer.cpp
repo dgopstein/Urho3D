@@ -57,7 +57,7 @@ OcclusionBuffer::~OcclusionBuffer() = default;
 bool OcclusionBuffer::SetSize(int width, int height, bool threaded)
 {
     // Force the height to an even amount of pixels for better mip generation
-    if (height & 1)
+    if ((unsigned)height & 1u)
         ++height;
 
     if (width == width_ && height == height_)
@@ -402,14 +402,14 @@ bool OcclusionBuffer::IsVisible(const BoundingBox& worldSpaceBox) const
         // Start from lowest mip level and check if a conclusive result can be found
         for (int i = mipBuffers_.Size() - 1; i >= 0; --i)
         {
-            int shift = i + 1;
-            int width = width_ >> shift;
-            int left = rect.left_ >> shift;
-            int right = rect.right_ >> shift;
+            unsigned shift = i + 1;
+            int width = (unsigned)width_ >> shift;
+            int left = (unsigned)rect.left_ >> shift;
+            int right = (unsigned)rect.right_ >> shift;
 
             DepthValue* buffer = mipBuffers_[i].Get();
-            DepthValue* row = buffer + (rect.top_ >> shift) * width;
-            DepthValue* endRow = buffer + (rect.bottom_ >> shift) * width;
+            DepthValue* row = buffer + ((unsigned)rect.top_ >> shift) * width;
+            DepthValue* endRow = buffer + ((unsigned)rect.bottom_ >> shift) * width;
             bool allOccluded = true;
 
             while (row <= endRow)
@@ -894,8 +894,8 @@ void OcclusionBuffer::DrawTriangle2D(const Vector3* vertices, bool clockwise, un
         while (row < endRow)
         {
             int invZ = topToBottom.invZ_;
-            int* dest = row + (topToBottom.x_ >> 16);
-            int* end = row + (topToMiddle.x_ >> 16);
+            int* dest = row + ((unsigned)topToBottom.x_ >> 16u);
+            int* end = row + ((unsigned)topToMiddle.x_ >> 16u);
             while (dest < end)
             {
                 if (invZ < *dest)
@@ -916,8 +916,8 @@ void OcclusionBuffer::DrawTriangle2D(const Vector3* vertices, bool clockwise, un
         while (row < endRow)
         {
             int invZ = topToBottom.invZ_;
-            int* dest = row + (topToBottom.x_ >> 16);
-            int* end = row + (middleToBottom.x_ >> 16);
+            int* dest = row + ((unsigned)topToBottom.x_ >> 16u);
+            int* end = row + ((unsigned)middleToBottom.x_ >> 16u);
             while (dest < end)
             {
                 if (invZ < *dest)
@@ -940,8 +940,8 @@ void OcclusionBuffer::DrawTriangle2D(const Vector3* vertices, bool clockwise, un
         while (row < endRow)
         {
             int invZ = topToMiddle.invZ_;
-            int* dest = row + (topToMiddle.x_ >> 16);
-            int* end = row + (topToBottom.x_ >> 16);
+            int* dest = row + ((unsigned)topToMiddle.x_ >> 16u);
+            int* end = row + ((unsigned)topToBottom.x_ >> 16u);
             while (dest < end)
             {
                 if (invZ < *dest)
@@ -962,8 +962,8 @@ void OcclusionBuffer::DrawTriangle2D(const Vector3* vertices, bool clockwise, un
         while (row < endRow)
         {
             int invZ = middleToBottom.invZ_;
-            int* dest = row + (middleToBottom.x_ >> 16);
-            int* end = row + (topToBottom.x_ >> 16);
+            int* dest = row + ((unsigned)middleToBottom.x_ >> 16u);
+            int* end = row + ((unsigned)topToBottom.x_ >> 16u);
             while (dest < end)
             {
                 if (invZ < *dest)

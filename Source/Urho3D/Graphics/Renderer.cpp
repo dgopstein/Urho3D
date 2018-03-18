@@ -889,7 +889,7 @@ Texture2D* Renderer::GetShadowMap(Light* light, Camera* camera, unsigned viewWid
         height *= 3;
     }
 
-    int searchKey = (width << 16) | height;
+    int searchKey = (unsigned)width << 16u | (unsigned)height;
     if (shadowMaps_.Contains(searchKey))
     {
         // If shadow maps are reused, always return the first
@@ -1010,7 +1010,8 @@ Texture* Renderer::GetScreenBuffer(int width, int height, unsigned format, int m
     if (multiSample == 1)
         autoResolve = false;
 
-    long long searchKey = ((long long)format << 32) | (multiSample << 24) | (width << 12) | height;
+    unsigned long long searchKey = (unsigned long long)format << 32u | (unsigned long long)multiSample << 24u |
+        (unsigned long)width << 12u | (unsigned long long)height;
     if (filtered)
         searchKey |= 0x8000000000000000LL;
     if (srgb)
@@ -1022,7 +1023,7 @@ Texture* Renderer::GetScreenBuffer(int width, int height, unsigned format, int m
 
     // Add persistent key if defined
     if (persistentKey)
-        searchKey += ((long long)persistentKey << 32);
+        searchKey += (unsigned long long)persistentKey << 32u;
 
     // If new size or format, initialize the allocation stats
     if (screenBuffers_.Find(searchKey) == screenBuffers_.End())
@@ -1541,9 +1542,9 @@ void Renderer::RemoveUnusedBuffers()
         }
     }
 
-    for (HashMap<long long, Vector<SharedPtr<Texture> > >::Iterator i = screenBuffers_.Begin(); i != screenBuffers_.End();)
+    for (HashMap<unsigned long long, Vector<SharedPtr<Texture> > >::Iterator i = screenBuffers_.Begin(); i != screenBuffers_.End();)
     {
-        HashMap<long long, Vector<SharedPtr<Texture> > >::Iterator current = i++;
+        HashMap<unsigned long long, Vector<SharedPtr<Texture> > >::Iterator current = i++;
         Vector<SharedPtr<Texture> >& buffers = current->second_;
         for (unsigned j = buffers.Size() - 1; j < buffers.Size(); --j)
         {
@@ -1571,7 +1572,7 @@ void Renderer::ResetShadowMapAllocations()
 
 void Renderer::ResetScreenBufferAllocations()
 {
-    for (HashMap<long long, unsigned>::Iterator i = screenBufferAllocations_.Begin(); i != screenBufferAllocations_.End(); ++i)
+    for (HashMap<unsigned long long, unsigned>::Iterator i = screenBufferAllocations_.Begin(); i != screenBufferAllocations_.End(); ++i)
         i->second_ = 0;
 }
 
@@ -1847,7 +1848,7 @@ void Renderer::SetIndirectionTextureData()
 
     for (unsigned i = 0; i < MAX_CUBEMAP_FACES; ++i)
     {
-        auto faceX = (unsigned char)((i & 1) * 255);
+        auto faceX = (unsigned char)((i & 1u) * 255);
         auto faceY = (unsigned char)((i / 2) * 255 / 3);
         unsigned char* dest = data;
         for (unsigned y = 0; y < 256; ++y)

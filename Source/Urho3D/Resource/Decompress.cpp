@@ -57,17 +57,17 @@ namespace Urho3D
 static int Unpack565(unsigned char const* packed, unsigned char* colour)
 {
     // build the packed value
-    int value = (int)packed[0] | ((int)packed[1] << 8);
+    unsigned value = (unsigned)packed[0] | ((unsigned)packed[1] << 8u);
 
     // get the components in the stored range
-    auto red = (unsigned char)((value >> 11) & 0x1f);
-    auto green = (unsigned char)((value >> 5) & 0x3f);
-    auto blue = (unsigned char)(value & 0x1f);
+    auto red = (unsigned char)(value >> 11u) & 0x1fu;
+    auto green = (unsigned char)(value >> 5u) & 0x3fu;
+    auto blue = (unsigned char)value & 0x1fu;
 
     // scale up to 8 bits
-    colour[0] = (red << 3) | (red >> 2);
-    colour[1] = (green << 2) | (green >> 4);
-    colour[2] = (blue << 3) | (blue >> 2);
+    colour[0] = (red << 3u) | (red >> 2u);
+    colour[1] = (green << 2u) | (green >> 4u);
+    colour[2] = (blue << 3u) | (blue >> 2u);
     colour[3] = 255;
 
     // return the value
@@ -113,10 +113,10 @@ static void DecompressColourDXT(unsigned char* rgba, void const* block, bool isD
         unsigned char* ind = indices + 4 * i;
         unsigned char packed = bytes[4 + i];
 
-        ind[0] = (unsigned char)(packed & 0x3);
-        ind[1] = (unsigned char)((packed >> 2) & 0x3);
-        ind[2] = (unsigned char)((packed >> 4) & 0x3);
-        ind[3] = (unsigned char)((packed >> 6) & 0x3);
+        ind[0] = (unsigned char)packed & 0x3u;
+        ind[1] = (unsigned char)(packed >> 2u) & 0x3u;
+        ind[2] = (unsigned char)(packed >> 4u) & 0x3u;
+        ind[3] = (unsigned char)(packed >> 6u) & 0x3u;
     }
 
     // store out the colours
@@ -139,12 +139,12 @@ static void DecompressAlphaDXT3(unsigned char* rgba, void const* block)
         unsigned char quant = bytes[i];
 
         // unpack the values
-        auto lo = (unsigned char)(quant & 0x0f);
-        auto hi = (unsigned char)(quant & 0xf0);
+        auto lo = (unsigned char)quant & 0x0fu;
+        auto hi = (unsigned char)quant & 0xf0u;
 
         // convert back up to bytes
-        rgba[8 * i + 3] = lo | (lo << 4);
-        rgba[8 * i + 7] = hi | (hi >> 4);
+        rgba[8 * i + 3] = lo | lo << 4u;
+        rgba[8 * i + 7] = hi | hi >> 4u;
     }
 }
 
@@ -181,17 +181,17 @@ static void DecompressAlphaDXT5(unsigned char* rgba, void const* block)
     for (int i = 0; i < 2; ++i)
     {
         // grab 3 bytes
-        int value = 0;
+        unsigned value = 0;
         for (int j = 0; j < 3; ++j)
         {
-            int byte = *src++;
-            value |= (byte << 8 * j);
+            unsigned byte = *src++;
+            value |= (byte << 8u * j);
         }
 
         // unpack 8 3-bit values from it
         for (int j = 0; j < 8; ++j)
         {
-            int index = (value >> 3 * j) & 0x7;
+            int index = (value >> 3u * j) & 0x7u;
             *dest++ = (unsigned char)index;
         }
     }
@@ -304,20 +304,20 @@ const int mod[8][4] = {{2,  8,   -2,  -8},
                        {47, 183, -47, -183}};
 
 // lsb: hgfedcba ponmlkji msb: hgfedcba ponmlkji due to endianness
-static unsigned long ModifyPixel(int red, int green, int blue, int x, int y, unsigned long modBlock, int modTable)
+static unsigned long ModifyPixel(unsigned red, unsigned green, unsigned blue, int x, int y, unsigned long modBlock, int modTable)
 {
-    int index = x * 4 + y, pixelMod;
-    unsigned long mostSig = modBlock << 1;
+    unsigned index = x * 4 + y, pixelMod;
+    unsigned long mostSig = modBlock << 1u;
     if (index < 8)    //hgfedcba
-        pixelMod = mod[modTable][((modBlock >> (index + 24)) & 0x1) + ((mostSig >> (index + 8)) & 0x2)];
+        pixelMod = mod[modTable][((modBlock >> (index + 24)) & 0x1u) + ((mostSig >> (index + 8)) & 0x2u)];
     else    // ponmlkj
-        pixelMod = mod[modTable][((modBlock >> (index + 8)) & 0x1) + ((mostSig >> (index - 8)) & 0x2)];
+        pixelMod = mod[modTable][((modBlock >> (index + 8)) & 0x1u) + ((mostSig >> (index - 8)) & 0x2u)];
 
     red = _CLAMP_(red + pixelMod, 0, 255);
     green = _CLAMP_(green + pixelMod, 0, 255);
     blue = _CLAMP_(blue + pixelMod, 0, 255);
 
-    return ((blue << 16) + (green << 8) + red) | 0xff000000;
+    return ((blue << 16u) + (green << 8u) + red) | 0xff000000u;
 }
 
 static void DecompressETC(unsigned char* pDestData, const void* pSrcData)
@@ -338,48 +338,48 @@ static void DecompressETC(unsigned char* pDestData, const void* pSrcData)
     if (bDiff)
     {    // differential mode 5 colour bits + 3 difference bits
         // get base colour for subblock 1
-        blue1 = (unsigned char)((blockTop & 0xf80000) >> 16);
-        green1 = (unsigned char)((blockTop & 0xf800) >> 8);
-        red1 = (unsigned char)(blockTop & 0xf8);
+        blue1 = (unsigned char)((blockTop & 0xf80000u) >> 16u);
+        green1 = (unsigned char)((blockTop & 0xf800u) >> 8u);
+        red1 = (unsigned char)(blockTop & 0xf8u);
 
         // get differential colour for subblock 2
-        signed char blues = (signed char)(blue1 >> 3) + ((signed char)((blockTop & 0x70000) >> 11) >> 5);
-        signed char greens = (signed char)(green1 >> 3) + ((signed char)((blockTop & 0x700) >> 3) >> 5);
-        signed char reds = (signed char)(red1 >> 3) + ((signed char)((blockTop & 0x7) << 5) >> 5);
+        signed char blues = (signed char)(blue1 >> 3u) + (signed char)(((blockTop & 0x70000u) >> 11u) >> 5u);
+        signed char greens = (signed char)(green1 >> 3u) + (signed char)(((blockTop & 0x700u) >> 3u) >> 5u);
+        signed char reds = (signed char)(red1 >> 3u) + (signed char)(((blockTop & 0x7u) << 5u) >> 5u);
 
         blue2 = (unsigned char)blues;
         green2 = (unsigned char)greens;
         red2 = (unsigned char)reds;
 
-        red1 = red1 + (red1 >> 5);    // copy bits to lower sig
-        green1 = green1 + (green1 >> 5);    // copy bits to lower sig
-        blue1 = blue1 + (blue1 >> 5);    // copy bits to lower sig
+        red1 = red1 + (red1 >> 5u);    // copy bits to lower sig
+        green1 = green1 + (green1 >> 5u);    // copy bits to lower sig
+        blue1 = blue1 + (blue1 >> 5u);    // copy bits to lower sig
 
-        red2 = (red2 << 3) + (red2 >> 2);    // copy bits to lower sig
-        green2 = (green2 << 3) + (green2 >> 2);    // copy bits to lower sig
-        blue2 = (blue2 << 3) + (blue2 >> 2);    // copy bits to lower sig
+        red2 = (red2 << 3u) + (red2 >> 2u);    // copy bits to lower sig
+        green2 = (green2 << 3u) + (green2 >> 2u);    // copy bits to lower sig
+        blue2 = (blue2 << 3u) + (blue2 >> 2u);    // copy bits to lower sig
     }
     else
     {    // individual mode 4 + 4 colour bits
         // get base colour for subblock 1
-        blue1 = (unsigned char)((blockTop & 0xf00000) >> 16);
-        blue1 = blue1 + (blue1 >> 4);    // copy bits to lower sig
-        green1 = (unsigned char)((blockTop & 0xf000) >> 8);
-        green1 = green1 + (green1 >> 4);    // copy bits to lower sig
-        red1 = (unsigned char)(blockTop & 0xf0);
-        red1 = red1 + (red1 >> 4);    // copy bits to lower sig
+        blue1 = (unsigned char)((blockTop & 0xf00000u) >> 16u);
+        blue1 = blue1 + (blue1 >> 4u);    // copy bits to lower sig
+        green1 = (unsigned char)((blockTop & 0xf000u) >> 8u);
+        green1 = green1 + (green1 >> 4u);    // copy bits to lower sig
+        red1 = (unsigned char)(blockTop & 0xf0u);
+        red1 = red1 + (red1 >> 4u);    // copy bits to lower sig
 
         // get base colour for subblock 2
-        blue2 = (unsigned char)((blockTop & 0xf0000) >> 12);
-        blue2 = blue2 + (blue2 >> 4);    // copy bits to lower sig
-        green2 = (unsigned char)((blockTop & 0xf00) >> 4);
-        green2 = green2 + (green2 >> 4);    // copy bits to lower sig
-        red2 = (unsigned char)((blockTop & 0xf) << 4);
-        red2 = red2 + (red2 >> 4);    // copy bits to lower sig
+        blue2 = (unsigned char)((blockTop & 0xf0000u) >> 12u);
+        blue2 = blue2 + (blue2 >> 4u);    // copy bits to lower sig
+        green2 = (unsigned char)((blockTop & 0xf00u) >> 4u);
+        green2 = green2 + (green2 >> 4u);    // copy bits to lower sig
+        red2 = (unsigned char)((blockTop & 0xfu) << 4u);
+        red2 = red2 + (red2 >> 4u);    // copy bits to lower sig
     }
     // get the modtables for each subblock
-    modtable1 = (int)((blockTop >> 29) & 0x7);
-    modtable2 = (int)((blockTop >> 26) & 0x7);
+    modtable1 = (int)((blockTop >> 29u) & 0x7u);
+    modtable2 = (int)((blockTop >> 26u) & 0x7u);
 
     if (!bFlip)
     {   // 2 2x4 blocks side by side
@@ -459,7 +459,7 @@ void DecompressImageETC(unsigned char* rgba, const void* blocks, int width, int 
 
 #define _MIN(X, Y) (((X)<(Y))? (X):(Y))
 #define _MAX(X, Y) (((X)>(Y))? (X):(Y))
-#define WRAP_COORD(Val, Size) ((Val) & ((Size)-1))
+#define WRAP_COORD(Val, Size) ((unsigned)(Val) & (unsigned)((Size)-1))
 #define CLAMP(X, lower, upper) (_MIN(_MAX((X),(lower)), (upper)))
 #define LIMIT_COORD(Val, Size, AssumeImageTiles) ((AssumeImageTiles)? WRAP_COORD((Val), (Size)): CLAMP((Val), 0, (Size)-1))
 
@@ -469,31 +469,31 @@ using AMTC_BLOCK_STRUCT = struct
     unsigned PackedData[2];
 };
 
-static void Unpack5554Colour(const AMTC_BLOCK_STRUCT* pBlock, int ABColours[2][4])
+static void Unpack5554Colour(const AMTC_BLOCK_STRUCT* pBlock, unsigned ABColours[2][4])
 {
     unsigned RawBits[2];
     int i;
 
     // Extract A and B
-    RawBits[0] = pBlock->PackedData[1] & (0xFFFE); /*15 bits (shifted up by one)*/
-    RawBits[1] = pBlock->PackedData[1] >> 16;       /*16 bits*/
+    RawBits[0] = pBlock->PackedData[1] & (0xFFFEu); /*15 bits (shifted up by one)*/
+    RawBits[1] = pBlock->PackedData[1] >> 16u;       /*16 bits*/
 
     // Step through both colours
     for (i = 0; i < 2; i++)
     {
         // If completely opaque
-        if (RawBits[i] & (1 << 15))
+        if (RawBits[i] & (1u << 15u))
         {
             // Extract R and G (both 5 bit)
-            ABColours[i][0] = (RawBits[i] >> 10) & 0x1F;
-            ABColours[i][1] = (RawBits[i] >> 5) & 0x1F;
+            ABColours[i][0] = (RawBits[i] >> 10u) & 0x1Fu;
+            ABColours[i][1] = (RawBits[i] >> 5u) & 0x1Fu;
 
             // The precision of Blue depends on  A or B. If A then we need to
             // replicate the top bit to get 5 bits in total
-            ABColours[i][2] = RawBits[i] & 0x1F;
+            ABColours[i][2] = RawBits[i] & 0x1Fu;
             if (i == 0)
             {
-                ABColours[0][2] |= ABColours[0][2] >> 4;
+                ABColours[0][2] |= ABColours[0][2] >> 4u;
             }
 
             // Set 4bit alpha fully on...
@@ -504,29 +504,29 @@ static void Unpack5554Colour(const AMTC_BLOCK_STRUCT* pBlock, int ABColours[2][4
         {
             // Extract R and G (both 4 bit).
             // (Leave a space on the end for the replication of bits
-            ABColours[i][0] = (RawBits[i] >> (8 - 1)) & 0x1E;
-            ABColours[i][1] = (RawBits[i] >> (4 - 1)) & 0x1E;
+            ABColours[i][0] = (RawBits[i] >> (8u - 1)) & 0x1Eu;
+            ABColours[i][1] = (RawBits[i] >> (4u - 1)) & 0x1Eu;
 
             // Replicate bits to truly expand to 5 bits
-            ABColours[i][0] |= ABColours[i][0] >> 4;
-            ABColours[i][1] |= ABColours[i][1] >> 4;
+            ABColours[i][0] |= ABColours[i][0] >> 4u;
+            ABColours[i][1] |= ABColours[i][1] >> 4u;
 
             // Grab the 3(+padding) or 4 bits of blue and add an extra padding bit
-            ABColours[i][2] = (RawBits[i] & 0xF) << 1;
+            ABColours[i][2] = (RawBits[i] & 0xFu) << 1u;
 
             // Expand from 3 to 5 bits if this is from colour A, or 4 to 5 bits if from
             // colour B
             if (i == 0)
             {
-                ABColours[0][2] |= ABColours[0][2] >> 3;
+                ABColours[0][2] |= ABColours[0][2] >> 3u;
             }
             else
             {
-                ABColours[0][2] |= ABColours[0][2] >> 4;
+                ABColours[0][2] |= ABColours[0][2] >> 4u;
             }
 
             // Set the alpha bits to be 3 + a zero on the end
-            ABColours[i][3] = (RawBits[i] >> 11) & 0xE;
+            ABColours[i][3] = (RawBits[i] >> 11u) & 0xEu;
         }
     }
 }
@@ -537,9 +537,9 @@ static void UnpackModulations(const AMTC_BLOCK_STRUCT* pBlock, const int Do2bitM
     int BlockModMode;
     unsigned ModulationBits;
 
-    int x, y;
+    unsigned x, y;
 
-    BlockModMode = pBlock->PackedData[1] & 1;
+    BlockModMode = pBlock->PackedData[1] & 1u;
     ModulationBits = pBlock->PackedData[0];
 
     // If it's in an interpolated mode
@@ -554,9 +554,9 @@ static void UnpackModulations(const AMTC_BLOCK_STRUCT* pBlock, const int Do2bitM
                 ModulationModes[y + StartY][x + StartX] = BlockModMode;
 
                 // If this is a stored value...
-                if (((x ^ y) & 1) == 0)
+                if (((x ^ y) & 1u) == 0)
                 {
-                    ModulationVals[y + StartY][x + StartX] = ModulationBits & 3;
+                    ModulationVals[y + StartY][x + StartX] = ModulationBits & 3u;
                     ModulationBits >>= 2;
                 }
             }
@@ -572,7 +572,7 @@ static void UnpackModulations(const AMTC_BLOCK_STRUCT* pBlock, const int Do2bitM
                 ModulationModes[y + StartY][x + StartX] = BlockModMode;
 
                 // Double the bits so 0=> 00, and 1=>11
-                if (ModulationBits & 1)
+                if (ModulationBits & 1u)
                 {
                     ModulationVals[y + StartY][x + StartX] = 0x3;
                 }
@@ -593,15 +593,15 @@ static void UnpackModulations(const AMTC_BLOCK_STRUCT* pBlock, const int Do2bitM
             {
                 ModulationModes[y + StartY][x + StartX] = BlockModMode;
 
-                ModulationVals[y + StartY][x + StartX] = ModulationBits & 3;
+                ModulationVals[y + StartY][x + StartX] = ModulationBits & 3u;
                 ModulationBits >>= 2;
             }
         }
     }
 }
 
-static void InterpolateColours(const int ColourP[4], const int ColourQ[4], const int ColourR[4], const int ColourS[4],
-    const int Do2bitMode, const int x, const int y, int Result[4])
+static void InterpolateColours(const unsigned ColourP[4], const unsigned ColourQ[4], const unsigned ColourR[4], const unsigned ColourS[4],
+    const int Do2bitMode, const unsigned x, const unsigned y, unsigned Result[4])
 {
     int u, v, uscale;
     int k;
@@ -618,14 +618,14 @@ static void InterpolateColours(const int ColourP[4], const int ColourQ[4], const
     }
 
     // Put the x and y values into the right range
-    v = (y & 0x3) | ((~y & 0x2) << 1);
+    v = (y & 0x3u) | ((~y & 0x2u) << 1u);
     if (Do2bitMode)
     {
-        u = (x & 0x7) | ((~x & 0x4) << 1);
+        u = (x & 0x7u) | ((~x & 0x4u) << 1u);
     }
     else
     {
-        u = (x & 0x3) | ((~x & 0x2) << 1);
+        u = (x & 0x3u) | ((~x & 0x2u) << 1u);
     }
 
     // Get the u and v scale amounts
@@ -677,12 +677,12 @@ static void InterpolateColours(const int ColourP[4], const int ColourQ[4], const
     // do RGB 5.3 => 8
     for (k = 0; k < 3; k++)
     {
-        Result[k] += Result[k] >> 5;
+        Result[k] += Result[k] >> 5u;
     }
-    Result[3] += Result[3] >> 4;
+    Result[3] += Result[3] >> 4u;
 }
 
-static void GetModulationValue(int x, int y, const int Do2bitMode, const int ModulationVals[8][16],
+static void GetModulationValue(unsigned x, unsigned y, const int Do2bitMode, const int ModulationVals[8][16],
     const int ModulationModes[8][16], int* Mod, int* DoPT)
 {
     static const int RepVals0[4] = {0, 3, 5, 8};
@@ -691,14 +691,14 @@ static void GetModulationValue(int x, int y, const int Do2bitMode, const int Mod
     int ModVal;
 
     // Map X and Y into the local 2x2 block
-    y = (y & 0x3) | ((~y & 0x2) << 1);
+    y = (y & 0x3u) | ((~y & 0x2u) << 1u);
     if (Do2bitMode)
     {
-        x = (x & 0x7) | ((~x & 0x4) << 1);
+        x = (x & 0x7u) | ((~x & 0x4u) << 1u);
     }
     else
     {
-        x = (x & 0x3) | ((~x & 0x2) << 1);
+        x = (x & 0x3u) | ((~x & 0x2u) << 1u);
     }
 
     // Assume no PT for now
@@ -712,7 +712,7 @@ static void GetModulationValue(int x, int y, const int Do2bitMode, const int Mod
     else if (Do2bitMode)
     {
         // If this is a stored value
-        if (((x ^ y) & 1) == 0)
+        if (((x ^ y) & 1u) == 0)
         {
             ModVal = RepVals0[ModulationVals[y][x]];
         }
@@ -785,7 +785,7 @@ static unsigned TwiddleUV(unsigned YSize, unsigned XSize, unsigned YPos, unsigne
 
         if (XPos & SrcBitPos)
         {
-            Twiddled |= (DstBitPos << 1);
+            Twiddled |= (DstBitPos << 1u);
         }
 
         SrcBitPos <<= 1;
@@ -797,7 +797,7 @@ static unsigned TwiddleUV(unsigned YSize, unsigned XSize, unsigned YPos, unsigne
     // Prepend any unused bits
     MaxValue >>= ShiftCount;
 
-    Twiddled |= (MaxValue << (2 * ShiftCount));
+    Twiddled |= (MaxValue << (2u * ShiftCount));
 
     return Twiddled;
 }
@@ -834,11 +834,11 @@ void DecompressImagePVRTC(unsigned char* rgba, const void* blocks, int width, in
     // Low precision colours extracted from the blocks
     struct
     {
-        int Reps[2][4];
+        unsigned Reps[2][4];
     } Colours5554[2][2];
 
     // Interpolated A and B colours for the pixel
-    int ASig[4], BSig[4];
+    unsigned ASig[4], BSig[4];
     int Result[4];
 
     if (Do2bitMode)
@@ -939,7 +939,7 @@ void DecompressImagePVRTC(unsigned char* rgba, const void* blocks, int width, in
             }
 
             // Store the result in the output image
-            uPosition = (unsigned)((x + y * width) << 2);
+            uPosition = (unsigned)(x + y * width) << 2u;
             rgba[uPosition + 0] = (unsigned char)Result[0];
             rgba[uPosition + 1] = (unsigned char)Result[1];
             rgba[uPosition + 2] = (unsigned char)Result[2];
@@ -982,16 +982,16 @@ void FlipBlockVertical(unsigned char* dest, const unsigned char* src, Compressed
         dest[0] = src[0];
         dest[1] = src[1];
         {
-            unsigned a1 = src[2] | ((unsigned)src[3] << 8) | ((unsigned)src[4] << 16);
-            unsigned a2 = src[5] | ((unsigned)src[6] << 8) | ((unsigned)src[7] << 16);
-            unsigned b1 = ((a1 & 0x000fff) << 12) | (a1 & 0xfff000) >> 12;
-            unsigned b2 = ((a2 & 0x000fff) << 12) | (a2 & 0xfff000) >> 12;
-            dest[2] = (unsigned char)(b2 & 0xff);
-            dest[3] = (unsigned char)((b2 >> 8) & 0xff);
-            dest[4] = (unsigned char)((b2 >> 16) & 0xff);
-            dest[5] = (unsigned char)(b1 & 0xff);
-            dest[6] = (unsigned char)((b1 >> 8) & 0xff);
-            dest[7] = (unsigned char)((b1 >> 16) & 0xff);
+            unsigned a1 = src[2] | ((unsigned)src[3] << 8u) | ((unsigned)src[4] << 16u);
+            unsigned a2 = src[5] | ((unsigned)src[6] << 8u) | ((unsigned)src[7] << 16u);
+            unsigned b1 = ((a1 & 0x000fffu) << 12u) | (a1 & 0xfff000u) >> 12u;
+            unsigned b2 = ((a2 & 0x000fffu) << 12u) | (a2 & 0xfff000u) >> 12u;
+            dest[2] = (unsigned char)(b2 & 0xffu);
+            dest[3] = (unsigned char)((b2 >> 8u) & 0xffu);
+            dest[4] = (unsigned char)((b2 >> 16u) & 0xffu);
+            dest[5] = (unsigned char)(b1 & 0xffu);
+            dest[6] = (unsigned char)((b1 >> 8u) & 0xffu);
+            dest[7] = (unsigned char)((b1 >> 16u) & 0xffu);
         }
         for (unsigned i = 0; i < 4; ++i)
         {
@@ -1008,14 +1008,14 @@ void FlipBlockVertical(unsigned char* dest, const unsigned char* src, Compressed
 
 static unsigned char FlipDXT1Horizontal(unsigned char src)
 {
-    return (unsigned char)(((src & 0x3) << 6) | ((src & 0xc) << 2) | ((src & 0x30) >> 2) | ((src & 0xc0) >> 6));
+    return (unsigned char)(((src & 0x3u) << 6u) | ((src & 0xcu) << 2u) | ((src & 0x30u) >> 2u) | ((src & 0xc0u) >> 6u));
 }
 
 static unsigned FlipDXT5AlphaHorizontal(unsigned src)
 {
     // Works on 2 lines at a time
-    return ((src & 0x7) << 9) | ((src & 0x38) << 3) | ((src & 0x1c0) >> 3) | ((src & 0xe00) >> 9) |
-           ((src & 0x7000) << 9) | ((src & 0x38000) << 3) | ((src & 0x1c0000) >> 3) | ((src & 0xe00000) >> 9);
+    return ((src & 0x7u) << 9u) | ((src & 0x38u) << 3u) | ((src & 0x1c0u) >> 3u) | ((src & 0xe00u) >> 9u) |
+           ((src & 0x7000u) << 9u) | ((src & 0x38000u) << 3u) | ((src & 0x1c0000u) >> 3u) | ((src & 0xe00000u) >> 9u);
 }
 
 void FlipBlockHorizontal(unsigned char* dest, const unsigned char* src, CompressedFormat format)
@@ -1033,8 +1033,8 @@ void FlipBlockHorizontal(unsigned char* dest, const unsigned char* src, Compress
     case CF_DXT3:
         for (unsigned i = 0; i < 8; i += 2)
         {
-            dest[i] = (unsigned char)(((src[i + 1] & 0xf0) >> 4) | ((src[i + 1] & 0xf) << 4));
-            dest[i + 1] = (unsigned char)(((src[i] & 0xf0) >> 4) | ((src[i] & 0xf) << 4));
+            dest[i] = (unsigned char)(((src[i + 1] & 0xf0u) >> 4u) | ((src[i + 1] & 0xfu) << 4u));
+            dest[i + 1] = (unsigned char)(((src[i] & 0xf0u) >> 4u) | ((src[i] & 0xfu) << 4u));
         }
         for (unsigned i = 0; i < 4; ++i)
         {
@@ -1047,16 +1047,16 @@ void FlipBlockHorizontal(unsigned char* dest, const unsigned char* src, Compress
         dest[0] = src[0];
         dest[1] = src[1];
         {
-            unsigned a1 = src[2] | ((unsigned)src[3] << 8) | ((unsigned)src[4] << 16);
-            unsigned a2 = src[5] | ((unsigned)src[6] << 8) | ((unsigned)src[7] << 16);
+            unsigned a1 = src[2] | ((unsigned)src[3] << 8u) | ((unsigned)src[4] << 16u);
+            unsigned a2 = src[5] | ((unsigned)src[6] << 8u) | ((unsigned)src[7] << 16u);
             unsigned b1 = FlipDXT5AlphaHorizontal(a1);
             unsigned b2 = FlipDXT5AlphaHorizontal(a2);
-            dest[2] = (unsigned char)(b1 & 0xff);
-            dest[3] = (unsigned char)((b1 >> 8) & 0xff);
-            dest[4] = (unsigned char)((b1 >> 16) & 0xff);
-            dest[5] = (unsigned char)(b2 & 0xff);
-            dest[6] = (unsigned char)((b2 >> 8) & 0xff);
-            dest[7] = (unsigned char)((b2 >> 16) & 0xff);
+            dest[2] = (unsigned char)(b1 & 0xffu);
+            dest[3] = (unsigned char)((b1 >> 8u) & 0xffu);
+            dest[4] = (unsigned char)((b1 >> 16u) & 0xffu);
+            dest[5] = (unsigned char)(b2 & 0xffu);
+            dest[6] = (unsigned char)((b2 >> 8u) & 0xffu);
+            dest[7] = (unsigned char)((b2 >> 16u) & 0xffu);
         }
         for (unsigned i = 0; i < 4; ++i)
         {

@@ -1127,7 +1127,7 @@ void View::GetLightBatches()
 
                 // In deferred modes, store the light volume batch now. Since light mask 8 lowest bits are output to the stencil,
                 // lights that have all zeroes in the low 8 bits can be skipped; they would not affect geometry anyway
-                if (deferred_ && (light->GetLightMask() & 0xff) != 0)
+                if (deferred_ && (light->GetLightMask() & 0xffu) != 0)
                 {
                     Batch volumeBatch;
                     volumeBatch.geometry_ = renderer_->GetLightGeometry(light);
@@ -1260,7 +1260,7 @@ void View::GetBaseBatches()
                     destBatch.lightQueue_ = nullptr;
 
                 bool allowInstancing = info.allowInstancing_;
-                if (allowInstancing && info.markToStencil_ && destBatch.lightMask_ != (destBatch.zone_->GetLightMask() & 0xff))
+                if (allowInstancing && info.markToStencil_ && destBatch.lightMask_ != (destBatch.zone_->GetLightMask() & 0xffu))
                     allowInstancing = false;
 
                 AddBatchToQueue(*info.batchQueue_, destBatch, tech, allowInstancing);
@@ -2495,16 +2495,16 @@ IntRect View::GetShadowMapViewport(Light* light, int splitIndex, Texture2D* shad
             else if (numSplits == 2)
                 return {splitIndex * width / 2, 0, (splitIndex + 1) * width / 2, height};
             else
-                return {(splitIndex & 1) * width / 2, (splitIndex / 2) * height / 2,
-                    ((splitIndex & 1) + 1) * width / 2, (splitIndex / 2 + 1) * height / 2};
+                return {(int)((unsigned)splitIndex & 1u) * width / 2, (splitIndex / 2) * height / 2,
+                    (int)(((unsigned)splitIndex & 1u) + 1) * width / 2, (splitIndex / 2 + 1) * height / 2};
         }
 
     case LIGHT_SPOT:
         return {0, 0, width, height};
 
     case LIGHT_POINT:
-        return {(splitIndex & 1) * width / 2, (splitIndex / 2) * height / 3,
-            ((splitIndex & 1) + 1) * width / 2, (splitIndex / 2 + 1) * height / 3};
+        return {(int)((unsigned)splitIndex & 1u) * width / 2, (splitIndex / 2) * height / 3,
+            (int)(((unsigned)splitIndex & 1u) + 1) * width / 2, (splitIndex / 2 + 1) * height / 3};
     }
 
     return {};
