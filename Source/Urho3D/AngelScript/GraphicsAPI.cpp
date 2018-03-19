@@ -837,7 +837,7 @@ static void RegisterBuffers(asIScriptEngine* engine)
 
 static void RegisterMaterial(asIScriptEngine* engine)
 {
-    engine->RegisterObjectType("BiasParameters", sizeof(BiasParameters), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_C);
+    engine->RegisterObjectType("BiasParameters", sizeof(BiasParameters), (unsigned)asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_C);
     engine->RegisterObjectBehaviour("BiasParameters", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(ConstructBiasParameters), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("BiasParameters", asBEHAVE_CONSTRUCT, "void f(const BiasParameters&in)", asFUNCTION(ConstructBiasParametersCopy), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("BiasParameters", asBEHAVE_CONSTRUCT, "void f(float, float, float normalOffset = 0.0f)", asFUNCTION(ConstructBiasParametersInit), asCALL_CDECL_OBJLAST);
@@ -1191,7 +1191,7 @@ static void RegisterLight(asIScriptEngine* engine)
     engine->RegisterEnumValue("LightType", "LIGHT_SPOT", LIGHT_SPOT);
     engine->RegisterEnumValue("LightType", "LIGHT_POINT", LIGHT_POINT);
 
-    engine->RegisterObjectType("CascadeParameters", sizeof(CascadeParameters), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_C);
+    engine->RegisterObjectType("CascadeParameters", sizeof(CascadeParameters), (unsigned)asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_C);
     engine->RegisterObjectBehaviour("CascadeParameters", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(ConstructCascadeParameters), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("CascadeParameters", asBEHAVE_CONSTRUCT, "void f(const CascadeParameters&in)", asFUNCTION(ConstructCascadeParametersCopy), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("CascadeParameters", asBEHAVE_CONSTRUCT, "void f(float, float, float, float, float, float biasAutoAdjust = 1.0)", asFUNCTION(ConstructCascadeParametersInit), asCALL_CDECL_OBJLAST);
@@ -1202,7 +1202,7 @@ static void RegisterLight(asIScriptEngine* engine)
     engine->RegisterObjectProperty("CascadeParameters", "float fadeStart", offsetof(CascadeParameters, fadeStart_));
     engine->RegisterObjectProperty("CascadeParameters", "float biasAutoAdjust", offsetof(CascadeParameters, biasAutoAdjust_));
 
-    engine->RegisterObjectType("FocusParameters", sizeof(FocusParameters), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_C);
+    engine->RegisterObjectType("FocusParameters", sizeof(FocusParameters), (unsigned)asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_C);
     engine->RegisterObjectBehaviour("FocusParameters", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(ConstructFocusParameters), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("FocusParameters", asBEHAVE_CONSTRUCT, "void f(const FocusParameters&in)", asFUNCTION(ConstructFocusParametersCopy), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("FocusParameters", asBEHAVE_CONSTRUCT, "void f(bool, bool, bool, float, float)", asFUNCTION(ConstructFocusParametersInit), asCALL_CDECL_OBJLAST);
@@ -2183,7 +2183,7 @@ static void RegisterOctree(asIScriptEngine* engine)
     engine->RegisterEnumValue("RayQueryLevel", "RAY_TRIANGLE", RAY_TRIANGLE);
     engine->RegisterEnumValue("RayQueryLevel", "RAY_TRIANGLE_UV", RAY_TRIANGLE_UV);
 
-    engine->RegisterObjectType("RayQueryResult", sizeof(RayQueryResult), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_C);
+    engine->RegisterObjectType("RayQueryResult", sizeof(RayQueryResult), (unsigned)asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_C);
     engine->RegisterObjectBehaviour("RayQueryResult", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(ConstructRayQueryResult), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectProperty("RayQueryResult", "Vector3 position", offsetof(RayQueryResult, position_));
     engine->RegisterObjectProperty("RayQueryResult", "Vector3 normal", offsetof(RayQueryResult, normal_));

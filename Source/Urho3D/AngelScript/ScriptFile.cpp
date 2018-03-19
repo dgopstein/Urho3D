@@ -746,7 +746,7 @@ void ScriptFile::SetParameters(asIScriptContext* context, asIScriptFunction* fun
             break;
 
         default:
-            if (paramTypeId & asTYPEID_APPOBJECT)
+            if ((unsigned)paramTypeId & asTYPEID_APPOBJECT)
             {
                 switch (parameters[i].GetType())
                 {

@@ -61,7 +61,7 @@ static int StringHashCmp(const StringHash& lhs, const StringHash& rhs)
 
 static void RegisterStringHash(asIScriptEngine* engine)
 {
-    engine->RegisterObjectType("StringHash", sizeof(StringHash), asOBJ_VALUE | asOBJ_POD | asGetTypeTraits<StringHash>() | asOBJ_APP_CLASS_ALLINTS);
+    engine->RegisterObjectType("StringHash", sizeof(StringHash), (unsigned)asOBJ_VALUE | asOBJ_POD | asGetTypeTraits<StringHash>() | asOBJ_APP_CLASS_ALLINTS);
     engine->RegisterObjectBehaviour("StringHash", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(ConstructStringHash), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("StringHash", asBEHAVE_CONSTRUCT, "void f(const StringHash&in)", asFUNCTION(ConstructStringHashCopy), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("StringHash", asBEHAVE_CONSTRUCT, "void f(const String&in)", asFUNCTION(ConstructStringHashInit), asCALL_CDECL_OBJLAST);
@@ -479,7 +479,7 @@ static void RegisterVariant(asIScriptEngine* engine)
     engine->RegisterEnumValue("VariantType", "VAR_STRINGVECTOR", VAR_STRINGVECTOR);
     engine->RegisterEnumValue("VariantType", "VAR_RECT", VAR_RECT);
 
-    engine->RegisterObjectType("ResourceRef", sizeof(ResourceRef), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_CK);
+    engine->RegisterObjectType("ResourceRef", sizeof(ResourceRef), (unsigned)asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_CK);
     engine->RegisterObjectBehaviour("ResourceRef", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(ConstructResourceRef), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("ResourceRef", asBEHAVE_CONSTRUCT, "void f(const ResourceRef&in)", asFUNCTION(ConstructResourceRefCopy), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("ResourceRef", asBEHAVE_CONSTRUCT, "void f(const String&in, const String&in)", asFUNCTION(ConstructResourceRefValue), asCALL_CDECL_OBJLAST);
@@ -699,7 +699,7 @@ static void RegisterSpline(asIScriptEngine* engine)
     engine->RegisterEnumValue("InterpolationMode", "LINEAR_CURVE", LINEAR_CURVE);
     engine->RegisterEnumValue("InterpolationMode", "CATMULL_ROM_FULL_CURVE", CATMULL_ROM_FULL_CURVE);
 
-    engine->RegisterObjectType("Spline", sizeof(Spline), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_CAK);
+    engine->RegisterObjectType("Spline", sizeof(Spline), (unsigned)asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_CAK);
     engine->RegisterObjectBehaviour("Spline", asBEHAVE_CONSTRUCT, "void f()", asFUNCTIONPR(ConstructSpline, (Spline*), void), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("Spline", asBEHAVE_CONSTRUCT, "void f(InterpolationMode)", asFUNCTIONPR(ConstructSpline, (InterpolationMode, Spline*), void), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("Spline", asBEHAVE_CONSTRUCT, "void f(Array<Variant>@+, InterpolationMode = BEZIER_CURVE)", asFUNCTIONPR(ConstructSpline, (CScriptArray*, InterpolationMode, Spline*), void), asCALL_CDECL_OBJLAST);
@@ -798,7 +798,7 @@ static String TimeGetTimeStamp(Time* time)
 
 static void RegisterTimer(asIScriptEngine* engine)
 {
-    engine->RegisterObjectType("Timer", sizeof(Timer), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_C);
+    engine->RegisterObjectType("Timer", sizeof(Timer), (unsigned)asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS_C);
     engine->RegisterObjectBehaviour("Timer", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(ConstructTimer), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod("Timer", "uint GetMSec(bool)", asMETHOD(Timer, GetMSec), asCALL_THISCALL);
     engine->RegisterObjectMethod("Timer", "void Reset()", asMETHOD(Timer, Reset), asCALL_THISCALL);

@@ -19,7 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-// Modified by Lasse Oorni for Urho3D
+// Modified by Lasse Oorni and Yao Wei Tjong for Urho3D
+
 /**
  *  \file SDL_video.h
  *
@@ -124,8 +125,9 @@ typedef enum
 /**
  *  \brief Used to indicate that you don't care what the window position is.
  */
+// Urho3D: use unsigned int to pass the "hicpp-signed-bitwise" check
 #define SDL_WINDOWPOS_UNDEFINED_MASK    0x1FFF0000u
-#define SDL_WINDOWPOS_UNDEFINED_DISPLAY(X)  (SDL_WINDOWPOS_UNDEFINED_MASK|(X))
+#define SDL_WINDOWPOS_UNDEFINED_DISPLAY(X)  (SDL_WINDOWPOS_UNDEFINED_MASK|(unsigned)(X))
 #define SDL_WINDOWPOS_UNDEFINED         SDL_WINDOWPOS_UNDEFINED_DISPLAY(0)
 #define SDL_WINDOWPOS_ISUNDEFINED(X)    \
             (((X)&0xFFFF0000) == SDL_WINDOWPOS_UNDEFINED_MASK)

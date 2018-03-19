@@ -19,6 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+// Modified by Yao Wei Tjong for Urho3D
+
 /**
  *  \file SDL_audio.h
  *
@@ -136,10 +138,11 @@ typedef Uint16 SDL_AudioFormat;
  *
  *  Which audio format changes are allowed when opening a device.
  */
+// Urho3D: use unsigned int to pass the "hicpp-signed-bitwise" check
 /* @{ */
-#define SDL_AUDIO_ALLOW_FREQUENCY_CHANGE    0x00000001
-#define SDL_AUDIO_ALLOW_FORMAT_CHANGE       0x00000002
-#define SDL_AUDIO_ALLOW_CHANNELS_CHANGE     0x00000004
+#define SDL_AUDIO_ALLOW_FREQUENCY_CHANGE    0x00000001u
+#define SDL_AUDIO_ALLOW_FORMAT_CHANGE       0x00000002u
+#define SDL_AUDIO_ALLOW_CHANNELS_CHANGE     0x00000004u
 #define SDL_AUDIO_ALLOW_ANY_CHANGE          (SDL_AUDIO_ALLOW_FREQUENCY_CHANGE|SDL_AUDIO_ALLOW_FORMAT_CHANGE|SDL_AUDIO_ALLOW_CHANNELS_CHANGE)
 /* @} */
 
