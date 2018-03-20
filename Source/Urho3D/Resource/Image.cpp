@@ -43,7 +43,7 @@
 #include "../DebugNew.h"
 
 #ifndef MAKEFOURCC
-#define MAKEFOURCC(ch0, ch1, ch2, ch3) ((unsigned)(ch0) | ((unsigned)(ch1) << 8) | ((unsigned)(ch2) << 16) | ((unsigned)(ch3) << 24))
+#define MAKEFOURCC(ch0, ch1, ch2, ch3) ((unsigned)(ch0) | ((unsigned)(ch1) << 8u) | ((unsigned)(ch2) << 16u) | ((unsigned)(ch3) << 24u))
 #endif
 
 #define FOURCC_DXT1 (MAKEFOURCC('D','X','T','1'))
@@ -427,7 +427,7 @@ bool Image::BeginLoad(Deserializer& source)
 
             while (currentImage)
             {
-                unsigned sourcePixelByteSize = ddsd.ddpfPixelFormat_.dwRGBBitCount_ >> 3;
+                unsigned sourcePixelByteSize = ddsd.ddpfPixelFormat_.dwRGBBitCount_ >> 3u;
                 unsigned numPixels = dataSize / sourcePixelByteSize;
 
 #define ADJUSTSHIFT(mask, l, r) \
@@ -480,7 +480,7 @@ bool Image::BeginLoad(Deserializer& source)
 
                     while (numPixels--)
                     {
-                        unsigned pixels = src[0] | (src[1] << 8) | (src[2] << 16);
+                        unsigned pixels = (unsigned)src[0] | (unsigned)src[1] << 8u | (unsigned)src[2] << 16u;
                         src += 3;
                         *dest++ = ((pixels & rMask) << rShiftL) >> rShiftR;
                         *dest++ = ((pixels & gMask) << gShiftL) >> gShiftR;
@@ -629,8 +629,8 @@ bool Image::BeginLoad(Deserializer& source)
 
             source.Read(&data_[dataOffset], levelSize);
             dataOffset += levelSize;
-            if (source.GetPosition() & 3)
-                source.Seek((source.GetPosition() + 3) & 0xfffffffc);
+            if (source.GetPosition() & 3u)
+                source.Seek((source.GetPosition() + 3) & 0xfffffffcu);
         }
 
         SetMemoryUse(dataSize);
@@ -1324,12 +1324,12 @@ bool Image::SaveDDS(const String& fileName) const
     DDSurfaceDesc2 ddsd;        // NOLINT(hicpp-member-init)
     memset(&ddsd, 0, sizeof(ddsd));
     ddsd.dwSize_ = sizeof(ddsd);
-    ddsd.dwFlags_ = 0x00000001l /*DDSD_CAPS*/
-        | 0x00000002l /*DDSD_HEIGHT*/ | 0x00000004l /*DDSD_WIDTH*/ | 0x00020000l /*DDSD_MIPMAPCOUNT*/ | 0x00001000l /*DDSD_PIXELFORMAT*/;
+    ddsd.dwFlags_ = 0x00000001u /*DDSD_CAPS*/
+        | 0x00000002u /*DDSD_HEIGHT*/ | 0x00000004u /*DDSD_WIDTH*/ | 0x00020000u /*DDSD_MIPMAPCOUNT*/ | 0x00001000u /*DDSD_PIXELFORMAT*/;
     ddsd.dwWidth_ = width_;
     ddsd.dwHeight_ = height_;
     ddsd.dwMipMapCount_ = levels.Size();
-    ddsd.ddpfPixelFormat_.dwFlags_ = 0x00000040l /*DDPF_RGB*/ | 0x00000001l /*DDPF_ALPHAPIXELS*/;
+    ddsd.ddpfPixelFormat_.dwFlags_ = 0x00000040u /*DDPF_RGB*/ | 0x00000001u /*DDPF_ALPHAPIXELS*/;
     ddsd.ddpfPixelFormat_.dwSize_ = sizeof(ddsd.ddpfPixelFormat_);
     ddsd.ddpfPixelFormat_.dwRGBBitCount_ = 32;
     ddsd.ddpfPixelFormat_.dwRBitMask_ = 0x000000ff;
@@ -1493,18 +1493,18 @@ unsigned Image::GetPixelInt(int x, int y, int z) const
     switch (components_)
     {
     case 4:
-        ret |= (unsigned)src[3] << 24;
+        ret |= (unsigned)src[3] << 24u;
         // Fall through
     case 3:
-        ret |= (unsigned)src[2] << 16;
+        ret |= (unsigned)src[2] << 16u;
         // Fall through
     case 2:
-        ret |= (unsigned)src[1] << 8;
+        ret |= (unsigned)src[1] << 8u;
         ret |= (unsigned)src[0];
         break;
     default:
-        ret |= (unsigned)src[0] << 16;
-        ret |= (unsigned)src[0] << 8;
+        ret |= (unsigned)src[0] << 16u;
+        ret |= (unsigned)src[0] << 8u;
         ret |= (unsigned)src[0];
         break;
     }
@@ -1604,33 +1604,33 @@ SharedPtr<Image> Image::GetNextLevel() const
         {
         case 1:
             for (int x = 0; x < widthOut; ++x)
-                pixelDataOut[x] = (unsigned char)(((unsigned)pixelDataIn[x * 2] + pixelDataIn[x * 2 + 1]) >> 1);
+                pixelDataOut[x] = (unsigned char)(((unsigned)pixelDataIn[x * 2] + pixelDataIn[x * 2 + 1]) >> 1u);
             break;
 
         case 2:
             for (int x = 0; x < widthOut * 2; x += 2)
             {
-                pixelDataOut[x] = (unsigned char)(((unsigned)pixelDataIn[x * 2] + pixelDataIn[x * 2 + 2]) >> 1);
-                pixelDataOut[x + 1] = (unsigned char)(((unsigned)pixelDataIn[x * 2 + 1] + pixelDataIn[x * 2 + 3]) >> 1);
+                pixelDataOut[x] = (unsigned char)(((unsigned)pixelDataIn[x * 2] + pixelDataIn[x * 2 + 2]) >> 1u);
+                pixelDataOut[x + 1] = (unsigned char)(((unsigned)pixelDataIn[x * 2 + 1] + pixelDataIn[x * 2 + 3]) >> 1u);
             }
             break;
 
         case 3:
             for (int x = 0; x < widthOut * 3; x += 3)
             {
-                pixelDataOut[x] = (unsigned char)(((unsigned)pixelDataIn[x * 2] + pixelDataIn[x * 2 + 3]) >> 1);
-                pixelDataOut[x + 1] = (unsigned char)(((unsigned)pixelDataIn[x * 2 + 1] + pixelDataIn[x * 2 + 4]) >> 1);
-                pixelDataOut[x + 2] = (unsigned char)(((unsigned)pixelDataIn[x * 2 + 2] + pixelDataIn[x * 2 + 5]) >> 1);
+                pixelDataOut[x] = (unsigned char)(((unsigned)pixelDataIn[x * 2] + pixelDataIn[x * 2 + 3]) >> 1u);
+                pixelDataOut[x + 1] = (unsigned char)(((unsigned)pixelDataIn[x * 2 + 1] + pixelDataIn[x * 2 + 4]) >> 1u);
+                pixelDataOut[x + 2] = (unsigned char)(((unsigned)pixelDataIn[x * 2 + 2] + pixelDataIn[x * 2 + 5]) >> 1u);
             }
             break;
 
         case 4:
             for (int x = 0; x < widthOut * 4; x += 4)
             {
-                pixelDataOut[x] = (unsigned char)(((unsigned)pixelDataIn[x * 2] + pixelDataIn[x * 2 + 4]) >> 1);
-                pixelDataOut[x + 1] = (unsigned char)(((unsigned)pixelDataIn[x * 2 + 1] + pixelDataIn[x * 2 + 5]) >> 1);
-                pixelDataOut[x + 2] = (unsigned char)(((unsigned)pixelDataIn[x * 2 + 2] + pixelDataIn[x * 2 + 6]) >> 1);
-                pixelDataOut[x + 3] = (unsigned char)(((unsigned)pixelDataIn[x * 2 + 3] + pixelDataIn[x * 2 + 7]) >> 1);
+                pixelDataOut[x] = (unsigned char)(((unsigned)pixelDataIn[x * 2] + pixelDataIn[x * 2 + 4]) >> 1u);
+                pixelDataOut[x + 1] = (unsigned char)(((unsigned)pixelDataIn[x * 2 + 1] + pixelDataIn[x * 2 + 5]) >> 1u);
+                pixelDataOut[x + 2] = (unsigned char)(((unsigned)pixelDataIn[x * 2 + 2] + pixelDataIn[x * 2 + 6]) >> 1u);
+                pixelDataOut[x + 3] = (unsigned char)(((unsigned)pixelDataIn[x * 2 + 3] + pixelDataIn[x * 2 + 7]) >> 1u);
             }
             break;
 
@@ -1654,7 +1654,7 @@ SharedPtr<Image> Image::GetNextLevel() const
                 for (int x = 0; x < widthOut; ++x)
                 {
                     out[x] = (unsigned char)(((unsigned)inUpper[x * 2] + inUpper[x * 2 + 1] +
-                                              inLower[x * 2] + inLower[x * 2 + 1]) >> 2);
+                                              inLower[x * 2] + inLower[x * 2 + 1]) >> 2u);
                 }
             }
             break;
@@ -1669,9 +1669,9 @@ SharedPtr<Image> Image::GetNextLevel() const
                 for (int x = 0; x < widthOut * 2; x += 2)
                 {
                     out[x] = (unsigned char)(((unsigned)inUpper[x * 2] + inUpper[x * 2 + 2] +
-                                              inLower[x * 2] + inLower[x * 2 + 2]) >> 2);
+                                              inLower[x * 2] + inLower[x * 2 + 2]) >> 2u);
                     out[x + 1] = (unsigned char)(((unsigned)inUpper[x * 2 + 1] + inUpper[x * 2 + 3] +
-                                                  inLower[x * 2 + 1] + inLower[x * 2 + 3]) >> 2);
+                                                  inLower[x * 2 + 1] + inLower[x * 2 + 3]) >> 2u);
                 }
             }
             break;
@@ -1686,11 +1686,11 @@ SharedPtr<Image> Image::GetNextLevel() const
                 for (int x = 0; x < widthOut * 3; x += 3)
                 {
                     out[x] = (unsigned char)(((unsigned)inUpper[x * 2] + inUpper[x * 2 + 3] +
-                                              inLower[x * 2] + inLower[x * 2 + 3]) >> 2);
+                                              inLower[x * 2] + inLower[x * 2 + 3]) >> 2u);
                     out[x + 1] = (unsigned char)(((unsigned)inUpper[x * 2 + 1] + inUpper[x * 2 + 4] +
-                                                  inLower[x * 2 + 1] + inLower[x * 2 + 4]) >> 2);
+                                                  inLower[x * 2 + 1] + inLower[x * 2 + 4]) >> 2u);
                     out[x + 2] = (unsigned char)(((unsigned)inUpper[x * 2 + 2] + inUpper[x * 2 + 5] +
-                                                  inLower[x * 2 + 2] + inLower[x * 2 + 5]) >> 2);
+                                                  inLower[x * 2 + 2] + inLower[x * 2 + 5]) >> 2u);
                 }
             }
             break;
@@ -1705,13 +1705,13 @@ SharedPtr<Image> Image::GetNextLevel() const
                 for (int x = 0; x < widthOut * 4; x += 4)
                 {
                     out[x] = (unsigned char)(((unsigned)inUpper[x * 2] + inUpper[x * 2 + 4] +
-                                              inLower[x * 2] + inLower[x * 2 + 4]) >> 2);
+                                              inLower[x * 2] + inLower[x * 2 + 4]) >> 2u);
                     out[x + 1] = (unsigned char)(((unsigned)inUpper[x * 2 + 1] + inUpper[x * 2 + 5] +
-                                                  inLower[x * 2 + 1] + inLower[x * 2 + 5]) >> 2);
+                                                  inLower[x * 2 + 1] + inLower[x * 2 + 5]) >> 2u);
                     out[x + 2] = (unsigned char)(((unsigned)inUpper[x * 2 + 2] + inUpper[x * 2 + 6] +
-                                                  inLower[x * 2 + 2] + inLower[x * 2 + 6]) >> 2);
+                                                  inLower[x * 2 + 2] + inLower[x * 2 + 6]) >> 2u);
                     out[x + 3] = (unsigned char)(((unsigned)inUpper[x * 2 + 3] + inUpper[x * 2 + 7] +
-                                                  inLower[x * 2 + 3] + inLower[x * 2 + 7]) >> 2);
+                                                  inLower[x * 2 + 3] + inLower[x * 2 + 7]) >> 2u);
                 }
             }
             break;
@@ -1745,7 +1745,7 @@ SharedPtr<Image> Image::GetNextLevel() const
                         out[x] = (unsigned char)(((unsigned)inOuterUpper[x * 2] + inOuterUpper[x * 2 + 1] +
                                                   inOuterLower[x * 2] + inOuterLower[x * 2 + 1] +
                                                   inInnerUpper[x * 2] + inInnerUpper[x * 2 + 1] +
-                                                  inInnerLower[x * 2] + inInnerLower[x * 2 + 1]) >> 3);
+                                                  inInnerLower[x * 2] + inInnerLower[x * 2 + 1]) >> 3u);
                     }
                 }
             }
@@ -1770,11 +1770,11 @@ SharedPtr<Image> Image::GetNextLevel() const
                         out[x] = (unsigned char)(((unsigned)inOuterUpper[x * 2] + inOuterUpper[x * 2 + 2] +
                                                   inOuterLower[x * 2] + inOuterLower[x * 2 + 2] +
                                                   inInnerUpper[x * 2] + inInnerUpper[x * 2 + 2] +
-                                                  inInnerLower[x * 2] + inInnerLower[x * 2 + 2]) >> 3);
+                                                  inInnerLower[x * 2] + inInnerLower[x * 2 + 2]) >> 3u);
                         out[x + 1] = (unsigned char)(((unsigned)inOuterUpper[x * 2 + 1] + inOuterUpper[x * 2 + 3] +
                                                       inOuterLower[x * 2 + 1] + inOuterLower[x * 2 + 3] +
                                                       inInnerUpper[x * 2 + 1] + inInnerUpper[x * 2 + 3] +
-                                                      inInnerLower[x * 2 + 1] + inInnerLower[x * 2 + 3]) >> 3);
+                                                      inInnerLower[x * 2 + 1] + inInnerLower[x * 2 + 3]) >> 3u);
                     }
                 }
             }
@@ -1799,15 +1799,15 @@ SharedPtr<Image> Image::GetNextLevel() const
                         out[x] = (unsigned char)(((unsigned)inOuterUpper[x * 2] + inOuterUpper[x * 2 + 3] +
                                                   inOuterLower[x * 2] + inOuterLower[x * 2 + 3] +
                                                   inInnerUpper[x * 2] + inInnerUpper[x * 2 + 3] +
-                                                  inInnerLower[x * 2] + inInnerLower[x * 2 + 3]) >> 3);
+                                                  inInnerLower[x * 2] + inInnerLower[x * 2 + 3]) >> 3u);
                         out[x + 1] = (unsigned char)(((unsigned)inOuterUpper[x * 2 + 1] + inOuterUpper[x * 2 + 4] +
                                                       inOuterLower[x * 2 + 1] + inOuterLower[x * 2 + 4] +
                                                       inInnerUpper[x * 2 + 1] + inInnerUpper[x * 2 + 4] +
-                                                      inInnerLower[x * 2 + 1] + inInnerLower[x * 2 + 4]) >> 3);
+                                                      inInnerLower[x * 2 + 1] + inInnerLower[x * 2 + 4]) >> 3u);
                         out[x + 2] = (unsigned char)(((unsigned)inOuterUpper[x * 2 + 2] + inOuterUpper[x * 2 + 5] +
                                                       inOuterLower[x * 2 + 2] + inOuterLower[x * 2 + 5] +
                                                       inInnerUpper[x * 2 + 2] + inInnerUpper[x * 2 + 5] +
-                                                      inInnerLower[x * 2 + 2] + inInnerLower[x * 2 + 5]) >> 3);
+                                                      inInnerLower[x * 2 + 2] + inInnerLower[x * 2 + 5]) >> 3u);
                     }
                 }
             }
@@ -1832,15 +1832,15 @@ SharedPtr<Image> Image::GetNextLevel() const
                         out[x] = (unsigned char)(((unsigned)inOuterUpper[x * 2] + inOuterUpper[x * 2 + 4] +
                                                   inOuterLower[x * 2] + inOuterLower[x * 2 + 4] +
                                                   inInnerUpper[x * 2] + inInnerUpper[x * 2 + 4] +
-                                                  inInnerLower[x * 2] + inInnerLower[x * 2 + 4]) >> 3);
+                                                  inInnerLower[x * 2] + inInnerLower[x * 2 + 4]) >> 3u);
                         out[x + 1] = (unsigned char)(((unsigned)inOuterUpper[x * 2 + 1] + inOuterUpper[x * 2 + 5] +
                                                       inOuterLower[x * 2 + 1] + inOuterLower[x * 2 + 5] +
                                                       inInnerUpper[x * 2 + 1] + inInnerUpper[x * 2 + 5] +
-                                                      inInnerLower[x * 2 + 1] + inInnerLower[x * 2 + 5]) >> 3);
+                                                      inInnerLower[x * 2 + 1] + inInnerLower[x * 2 + 5]) >> 3u);
                         out[x + 2] = (unsigned char)(((unsigned)inOuterUpper[x * 2 + 2] + inOuterUpper[x * 2 + 6] +
                                                       inOuterLower[x * 2 + 2] + inOuterLower[x * 2 + 6] +
                                                       inInnerUpper[x * 2 + 2] + inInnerUpper[x * 2 + 6] +
-                                                      inInnerLower[x * 2 + 2] + inInnerLower[x * 2 + 6]) >> 3);
+                                                      inInnerLower[x * 2 + 2] + inInnerLower[x * 2 + 6]) >> 3u);
                     }
                 }
             }
@@ -2037,7 +2037,7 @@ CompressedLevel Image::GetCompressedLevel(unsigned index) const
             int dataWidth = Max(level.width_, level.blockSize_ == 2 ? 16 : 8);
             int dataHeight = Max(level.height_, 8);
             level.data_ = data_.Get() + offset;
-            level.dataSize_ = (dataWidth * dataHeight * level.blockSize_ + 7) >> 3;
+            level.dataSize_ = (dataWidth * dataHeight * level.blockSize_ + 7) >> 3u;
             level.rows_ = (unsigned)dataHeight;
             level.rowSize_ = level.dataSize_ / level.rows_;
 
@@ -2136,8 +2136,11 @@ Image* Image::GetSubimage(const IntRect& rect) const
             }
 
             ++subimageLevels;
-            if ((currentRect.left_ & 4) || (currentRect.right_ & 4) || (currentRect.top_ & 4) || (currentRect.bottom_ & 4))
+            if ((unsigned)currentRect.left_ & 4u || (unsigned)currentRect.right_ & 4u || (unsigned)currentRect.top_ & 4u ||
+                (unsigned)currentRect.bottom_ & 4u)
+            {
                 break;
+            }
             else
             {
                 currentRect.left_ /= 2;

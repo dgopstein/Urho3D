@@ -49,7 +49,7 @@ IKSolver::IKSolver(Context* context) :
     Component(context),
     solver_(nullptr),
     algorithm_(FABRIK),
-    features_(AUTO_SOLVE | JOINT_ROTATIONS | UPDATE_ACTIVE_POSE),
+    features_((unsigned)AUTO_SOLVE | JOINT_ROTATIONS | UPDATE_ACTIVE_POSE),
     chainTreesNeedUpdating_(false),
     treeNeedsRebuild(true),
     solverTreeValid_(false)

@@ -179,7 +179,7 @@ static bool ScriptArrayTemplateCallback(asITypeInfo *ti, bool &dontGarbageCollec
 {
     // Make sure the subtype can be instantiated with a default factory/constructor,
     // otherwise we won't be able to instantiate the elements.
-    int typeId = ti->GetSubTypeId();
+    unsigned typeId = ti->GetSubTypeId();
     if (typeId == asTYPEID_VOID)
         return false;
     if ((typeId & asTYPEID_MASK_OBJECT) && !(typeId & asTYPEID_OBJHANDLE))
@@ -335,14 +335,14 @@ CScriptArray::CScriptArray(asITypeInfo *ot, void *buf)
     }
 
     // Copy the values of the array elements from the buffer
-    if( (ot->GetSubTypeId() & asTYPEID_MASK_OBJECT) == 0 )
+    if( ((unsigned)ot->GetSubTypeId() & asTYPEID_MASK_OBJECT) == 0 )
     {
         CreateBuffer(&buffer, length);
 
         // Copy the values of the primitive type into the internal buffer
         memcpy(At(0), (((asUINT*)buf)+1), length * elementSize);
     }
-    else if( ot->GetSubTypeId() & asTYPEID_OBJHANDLE )
+    else if( (unsigned)ot->GetSubTypeId() & asTYPEID_OBJHANDLE )
     {
         CreateBuffer(&buffer, length);
 
@@ -355,7 +355,7 @@ CScriptArray::CScriptArray(asITypeInfo *ot, void *buf)
         // its references too
         memset((((asUINT*)buf)+1), 0, length * elementSize);
     }
-    else if( ot->GetSubType()->GetFlags() & asOBJ_REF )
+    else if( (unsigned)ot->GetSubType()->GetFlags() & asOBJ_REF )
     {
         // Only allocate the buffer, but not the objects
         subTypeId |= asTYPEID_OBJHANDLE;
@@ -497,7 +497,7 @@ void CScriptArray::SetValue(asUINT index, void *value)
     void *ptr = At(index);
     if( ptr == nullptr ) return;
 
-    if( (subTypeId & ~asTYPEID_MASK_SEQNBR) && !(subTypeId & asTYPEID_OBJHANDLE) )
+    if( (subTypeId & ~(unsigned)asTYPEID_MASK_SEQNBR) && !(subTypeId & asTYPEID_OBJHANDLE) )
         objType->GetEngine()->AssignScriptObject(ptr, value, objType->GetSubType());
     else if( subTypeId & asTYPEID_OBJHANDLE )
     {
@@ -861,7 +861,7 @@ bool CScriptArray::Less(const void *a, const void *b, bool asc, asIScriptContext
         b = TEMP;
     }
 
-    if( !(subTypeId & ~asTYPEID_MASK_SEQNBR) )
+    if( !(subTypeId & ~(unsigned)asTYPEID_MASK_SEQNBR) )
     {
         // Simple compare of values
         switch( subTypeId )
@@ -948,7 +948,7 @@ bool CScriptArray::operator==(const CScriptArray &other) const
     asIScriptContext *cmpContext = nullptr;
     bool isNested = false;
 
-    if( subTypeId & ~asTYPEID_MASK_SEQNBR )
+    if( subTypeId & ~(unsigned)asTYPEID_MASK_SEQNBR )
     {
         // Try to reuse the active context
         cmpContext = asGetActiveContext();
@@ -997,7 +997,7 @@ bool CScriptArray::operator==(const CScriptArray &other) const
 // internal
 bool CScriptArray::Equals(const void *a, const void *b, asIScriptContext *ctx, SArrayCache *cache) const
 {
-    if( !(subTypeId & ~asTYPEID_MASK_SEQNBR) )
+    if( !(subTypeId & ~(unsigned)asTYPEID_MASK_SEQNBR) )
     {
         // Simple compare of values
         switch( subTypeId )
@@ -1132,7 +1132,7 @@ int CScriptArray::Find(asUINT startAt, void *value) const
     // Check if the subtype really supports find()
     // TODO: Can't this be done at compile time too by the template callback
     SArrayCache *cache = nullptr;
-    if( subTypeId & ~asTYPEID_MASK_SEQNBR )
+    if( subTypeId & ~(unsigned)asTYPEID_MASK_SEQNBR )
     {
         cache = reinterpret_cast<SArrayCache*>(objType->GetUserData(ARRAY_CACHE));
         if( !cache || (cache->cmpFunc == nullptr && cache->eqFunc == nullptr) )
@@ -1167,7 +1167,7 @@ int CScriptArray::Find(asUINT startAt, void *value) const
     asIScriptContext *cmpContext = nullptr;
     bool isNested = false;
 
-    if( subTypeId & ~asTYPEID_MASK_SEQNBR )
+    if( subTypeId & ~(unsigned)asTYPEID_MASK_SEQNBR )
     {
         // Try to reuse the active context
         cmpContext = asGetActiveContext();
@@ -1281,7 +1281,7 @@ void CScriptArray::Sort(asUINT startAt, asUINT count, bool asc)
 {
     // Subtype isn't primitive and doesn't have opCmp
     auto*cache = reinterpret_cast<SArrayCache*>(objType->GetUserData(ARRAY_CACHE));
-    if( subTypeId & ~asTYPEID_MASK_SEQNBR )
+    if( subTypeId & ~(unsigned)asTYPEID_MASK_SEQNBR )
     {
         if( !cache || cache->cmpFunc == nullptr )
         {
@@ -1340,7 +1340,7 @@ void CScriptArray::Sort(asUINT startAt, asUINT count, bool asc)
     asIScriptContext *cmpContext = nullptr;
     bool isNested = false;
 
-    if( subTypeId & ~asTYPEID_MASK_SEQNBR )
+    if( subTypeId & ~(unsigned)asTYPEID_MASK_SEQNBR )
     {
         // Try to reuse the active context
         cmpContext = asGetActiveContext();
@@ -1450,7 +1450,7 @@ void CScriptArray::Precache()
 
     // Check if it is an array of objects. Only for these do we need to cache anything
     // Type ids for primitives and enums only has the sequence number part
-    if( !(subTypeId & ~asTYPEID_MASK_SEQNBR) )
+    if( !(subTypeId & ~(unsigned)asTYPEID_MASK_SEQNBR) )
         return;
 
     // The opCmp and opEquals methods are cached because the searching for the
@@ -1510,17 +1510,17 @@ void CScriptArray::Precache()
                 int paramTypeId;
                 func->GetParam(0, &paramTypeId, &flags);
 
-                if( (paramTypeId & ~(asTYPEID_OBJHANDLE|asTYPEID_HANDLETOCONST)) != (subTypeId &  ~(asTYPEID_OBJHANDLE|asTYPEID_HANDLETOCONST)) )
+                if( ((unsigned)paramTypeId & ~((unsigned)asTYPEID_OBJHANDLE|asTYPEID_HANDLETOCONST)) != (subTypeId &  ~((unsigned)asTYPEID_OBJHANDLE|asTYPEID_HANDLETOCONST)) )
                     continue;
 
                 if( (flags & asTM_INREF) )
                 {
-                    if( (paramTypeId & asTYPEID_OBJHANDLE) || (mustBeConst && !(flags & asTM_CONST)) )
+                    if( ((unsigned)paramTypeId & asTYPEID_OBJHANDLE) || (mustBeConst && !(flags & asTM_CONST)) )
                         continue;
                 }
-                else if( paramTypeId & asTYPEID_OBJHANDLE )
+                else if( (unsigned)paramTypeId & asTYPEID_OBJHANDLE )
                 {
-                    if( mustBeConst && !(paramTypeId & asTYPEID_HANDLETOCONST) )
+                    if( mustBeConst && !((unsigned)paramTypeId & asTYPEID_HANDLETOCONST) )
                         continue;
                 }
                 else
@@ -1726,8 +1726,8 @@ CScriptDictionary::CScriptDictionary(asBYTE *buffer)
     {
         // Align the buffer pointer on a 4 byte boundary in
         // case previous value was smaller than 4 bytes
-        if( asPWORD(buffer) & 0x3 )
-            buffer += 4 - (asPWORD(buffer) & 0x3);
+        if( asPWORD(buffer) & 0x3u )
+            buffer += 4 - (asPWORD(buffer) & 0x3u);
 
         // Get the name value pair from the buffer and insert it in the dictionary
         String name = *(String*)buffer;
@@ -1766,8 +1766,8 @@ CScriptDictionary::CScriptDictionary(asBYTE *buffer)
         }
         else
         {
-            if( (typeId & asTYPEID_MASK_OBJECT) &&
-                !(typeId & asTYPEID_OBJHANDLE) &&
+            if( ((unsigned)typeId & asTYPEID_MASK_OBJECT) &&
+                !((unsigned)typeId & asTYPEID_OBJHANDLE) &&
                 (engine->GetTypeInfoById(typeId)->GetFlags() & asOBJ_REF))
             {
                 // Dereference the pointer to get the reference to the actual object
@@ -1778,7 +1778,7 @@ CScriptDictionary::CScriptDictionary(asBYTE *buffer)
         }
 
         // Advance the buffer pointer with the size of the value
-        if( typeId & asTYPEID_MASK_OBJECT )
+        if( (unsigned)typeId & asTYPEID_MASK_OBJECT )
         {
             asITypeInfo *ot = engine->GetTypeInfoById(typeId);
             if( ot->GetFlags() & asOBJ_VALUE )
@@ -2081,13 +2081,13 @@ void CScriptDictValue::Set(asIScriptEngine *engine, void *value, int typeId)
     FreeValue(engine);
 
     m_typeId = typeId;
-    if( typeId & asTYPEID_OBJHANDLE )
+    if( (unsigned)typeId & asTYPEID_OBJHANDLE )
     {
         // We're receiving a reference to the handle, so we need to dereference it
         m_valueObj = *(void**)value;
         engine->AddRefScriptObject(m_valueObj, engine->GetTypeInfoById(typeId));
     }
-    else if( typeId & asTYPEID_MASK_OBJECT )
+    else if( (unsigned)typeId & asTYPEID_MASK_OBJECT )
     {
         // Create a copy of the object
         m_valueObj = engine->CreateScriptObjectCopy(value, engine->GetTypeInfoById(typeId));
@@ -2123,7 +2123,7 @@ void CScriptDictValue::Set(asIScriptEngine *engine, const double &value)
 bool CScriptDictValue::Get(asIScriptEngine *engine, void *value, int typeId) const
 {
     // Return the value
-    if( typeId & asTYPEID_OBJHANDLE )
+    if( (unsigned)typeId & asTYPEID_OBJHANDLE )
     {
         // A handle can be retrieved if the stored type is a handle of same or compatible type
         // or if the stored type is an object that implements the interface that the handle refer to.
@@ -2137,7 +2137,7 @@ bool CScriptDictValue::Get(asIScriptEngine *engine, void *value, int typeId) con
             return true;
         }
     }
-    else if( typeId & asTYPEID_MASK_OBJECT )
+    else if( (unsigned)typeId & asTYPEID_MASK_OBJECT )
     {
         // Verify that the copy can be made
         bool isCompatible = false;
@@ -2256,7 +2256,7 @@ static double CScriptDictValue_opConvDouble(CScriptDictValue *obj)
 
 void RegisterDictionary(asIScriptEngine *engine)
 {
-    engine->RegisterObjectType("DictionaryValue", sizeof(CScriptDictValue), asOBJ_VALUE | asOBJ_ASHANDLE | asOBJ_APP_CLASS_CD);
+    engine->RegisterObjectType("DictionaryValue", sizeof(CScriptDictValue), (unsigned)asOBJ_VALUE | asOBJ_ASHANDLE | asOBJ_APP_CLASS_CD);
     engine->RegisterObjectBehaviour("DictionaryValue", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(CScriptDictValue_Construct), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectBehaviour("DictionaryValue", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(CScriptDictValue_Destruct), asCALL_CDECL_OBJLAST);
     engine->RegisterObjectMethod("DictionaryValue", "DictionaryValue &opHndlAssign(const ?&in)", asFUNCTIONPR(CScriptDictValue_opAssign, (void *, int, CScriptDictValue*), CScriptDictValue &), asCALL_CDECL_OBJLAST);

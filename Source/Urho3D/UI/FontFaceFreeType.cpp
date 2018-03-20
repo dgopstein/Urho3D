@@ -166,15 +166,15 @@ bool FontFaceFreeType::Load(const unsigned char* fontData, unsigned fontDataSize
     loadMode_ = FT_LOAD_DEFAULT;
     if (ui->GetForceAutoHint())
     {
-        loadMode_ |= FT_LOAD_FORCE_AUTOHINT;
+        loadMode_ |= FT_LOAD_FORCE_AUTOHINT;    // NOLINT(hicpp-signed-bitwise)
     }
     if (ui->GetFontHintLevel() == FONT_HINT_LEVEL_NONE)
     {
-        loadMode_ |= FT_LOAD_NO_HINTING;
+        loadMode_ |= FT_LOAD_NO_HINTING;        // NOLINT(hicpp-signed-bitwise)
     }
     if (ui->GetFontHintLevel() == FONT_HINT_LEVEL_LIGHT)
     {
-        loadMode_ |= FT_LOAD_TARGET_LIGHT;
+        loadMode_ |= FT_LOAD_TARGET_LIGHT;      // NOLINT(hicpp-signed-bitwise)
     }
 
     ascender_ = FixedToFloat(face->size->metrics.ascender);
@@ -225,11 +225,11 @@ bool FontFaceFreeType::Load(const unsigned char* fontData, unsigned fontDataSize
     font_->SetMemoryUse(font_->GetMemoryUse() + textureWidth * textureHeight);
 
     // Store kerning if face has kerning information
-    if (FT_HAS_KERNING(face))
+    if (FT_HAS_KERNING(face))   // NOLINT(hicpp-signed-bitwise)
     {
         // Read kerning manually to be more efficient and avoid out of memory crash when use large font file, for example there
         // are 29354 glyphs in msyh.ttf
-        FT_ULong tagKern = FT_MAKE_TAG('k', 'e', 'r', 'n');
+        FT_ULong tagKern = FT_MAKE_TAG('k', 'e', 'r', 'n');     // NOLINT(hicpp-signed-bitwise)
         FT_ULong kerningTableSize = 0;
         FT_Error error = FT_Load_Sfnt_Table(face, tagKern, 0, nullptr, &kerningTableSize);
         if (error)
@@ -416,7 +416,7 @@ bool FontFaceFreeType::LoadCharGlyph(unsigned charCode, Image* image)
     FT_GlyphSlot slot = face->glyph;
 
     FontGlyph fontGlyph;
-    FT_Error error = FT_Load_Char(face, charCode, loadMode_ | FT_LOAD_RENDER);
+    FT_Error error = FT_Load_Char(face, charCode, loadMode_ | FT_LOAD_RENDER);      // NOLINT(hicpp-signed-bitwise)
     if (error)
     {
         const char* family = face->family_name ? face->family_name : "NULL";

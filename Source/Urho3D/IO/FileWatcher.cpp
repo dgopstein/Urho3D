@@ -113,8 +113,8 @@ bool FileWatcher::StartWatching(const String& pathName, bool watchSubDirs)
         return false;
     }
 #elif defined(__linux__)
-    int flags = IN_CREATE | IN_DELETE | IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO;
-    int handle = inotify_add_watch(watchHandle_, pathName.CString(), (unsigned)flags);
+    unsigned flags = IN_CREATE | IN_DELETE | IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO;      // NOLINT(hicpp-signed-bitwise)
+    int handle = inotify_add_watch(watchHandle_, pathName.CString(), flags);
 
     if (handle < 0)
     {
@@ -140,7 +140,7 @@ bool FileWatcher::StartWatching(const String& pathName, bool watchSubDirs)
                 // Don't watch ./ or ../ sub-directories
                 if (!subDirFullPath.EndsWith("./"))
                 {
-                    handle = inotify_add_watch(watchHandle_, subDirFullPath.CString(), (unsigned)flags);
+                    handle = inotify_add_watch(watchHandle_, subDirFullPath.CString(), flags);
                     if (handle < 0)
                         URHO3D_LOGERROR("Failed to start watching subdirectory path " + subDirFullPath);
                     else
@@ -295,7 +295,7 @@ void FileWatcher::ThreadFunction()
 
             if (event->len > 0)
             {
-                if (event->mask & IN_MODIFY || event->mask & IN_MOVE)
+                if (event->mask & IN_MODIFY || event->mask & IN_MOVE)       // NOLINT(hicpp-signed-bitwise)
                 {
                     String fileName;
                     fileName = dirHandle_[event->wd] + event->name;

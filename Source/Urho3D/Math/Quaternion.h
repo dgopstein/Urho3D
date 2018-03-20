@@ -183,7 +183,7 @@ public:
 #ifdef URHO3D_SSE
         __m128 c = _mm_cmpeq_ps(_mm_loadu_ps(&w_), _mm_loadu_ps(&rhs.w_));
         c = _mm_and_ps(c, _mm_movehl_ps(c, c));
-        c = _mm_and_ps(c, _mm_shuffle_ps(c, c, _MM_SHUFFLE(1, 1, 1, 1)));
+        c = _mm_and_ps(c, _mm_shuffle_ps(c, c, _MM_SHUFFLE(1, 1, 1, 1)));   // NOLINT(hicpp-signed-bitwise)
         return _mm_cvtsi128_si32(_mm_castps_si128(c)) == -1;
 #else
         return w_ == rhs.w_ && x_ == rhs.x_ && y_ == rhs.y_ && z_ == rhs.z_;
@@ -239,15 +239,15 @@ public:
 #ifdef URHO3D_SSE
         __m128 q1 = _mm_loadu_ps(&w_);
         __m128 q2 = _mm_loadu_ps(&rhs.w_);
-        q2 = _mm_shuffle_ps(q2, q2, _MM_SHUFFLE(0, 3, 2, 1));
+        q2 = _mm_shuffle_ps(q2, q2, _MM_SHUFFLE(0, 3, 2, 1));                           // NOLINT(hicpp-signed-bitwise)
         const __m128 signy = _mm_castsi128_ps(_mm_set_epi32((int)0x80000000UL, (int)0x80000000UL, 0, 0));
-        const __m128 signx = _mm_shuffle_ps(signy, signy, _MM_SHUFFLE(2, 0, 2, 0));
-        const __m128 signz = _mm_shuffle_ps(signy, signy, _MM_SHUFFLE(3, 0, 0, 3));
-        __m128 out = _mm_mul_ps(_mm_shuffle_ps(q1, q1, _MM_SHUFFLE(1, 1, 1, 1)), _mm_shuffle_ps(q2, q2, _MM_SHUFFLE(0, 1, 2, 3)));
-        out = _mm_add_ps(_mm_mul_ps(_mm_xor_ps(signy, _mm_shuffle_ps(q1, q1, _MM_SHUFFLE(2, 2, 2, 2))), _mm_shuffle_ps(q2, q2, _MM_SHUFFLE(1, 0, 3, 2))), _mm_xor_ps(signx, out));
-        out = _mm_add_ps(_mm_mul_ps(_mm_xor_ps(signz, _mm_shuffle_ps(q1, q1, _MM_SHUFFLE(3, 3, 3, 3))), _mm_shuffle_ps(q2, q2, _MM_SHUFFLE(2, 3, 0, 1))), out);
-        out = _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(q1, q1, _MM_SHUFFLE(0, 0, 0, 0)), q2), out);
-        return Quaternion(_mm_shuffle_ps(out, out, _MM_SHUFFLE(2, 1, 0, 3)));
+        const __m128 signx = _mm_shuffle_ps(signy, signy, _MM_SHUFFLE(2, 0, 2, 0));     // NOLINT(hicpp-signed-bitwise)
+        const __m128 signz = _mm_shuffle_ps(signy, signy, _MM_SHUFFLE(3, 0, 0, 3));     // NOLINT(hicpp-signed-bitwise)
+        __m128 out = _mm_mul_ps(_mm_shuffle_ps(q1, q1, _MM_SHUFFLE(1, 1, 1, 1)), _mm_shuffle_ps(q2, q2, _MM_SHUFFLE(0, 1, 2, 3)));  // NOLINT(hicpp-signed-bitwise)
+        out = _mm_add_ps(_mm_mul_ps(_mm_xor_ps(signy, _mm_shuffle_ps(q1, q1, _MM_SHUFFLE(2, 2, 2, 2))), _mm_shuffle_ps(q2, q2, _MM_SHUFFLE(1, 0, 3, 2))), _mm_xor_ps(signx, out));  // NOLINT(hicpp-signed-bitwise)
+        out = _mm_add_ps(_mm_mul_ps(_mm_xor_ps(signz, _mm_shuffle_ps(q1, q1, _MM_SHUFFLE(3, 3, 3, 3))), _mm_shuffle_ps(q2, q2, _MM_SHUFFLE(2, 3, 0, 1))), out); // NOLINT(hicpp-signed-bitwise)
+        out = _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(q1, q1, _MM_SHUFFLE(0, 0, 0, 0)), q2), out);     // NOLINT(hicpp-signed-bitwise)
+        return Quaternion(_mm_shuffle_ps(out, out, _MM_SHUFFLE(2, 1, 0, 3)));           // NOLINT(hicpp-signed-bitwise)
 #else
         return Quaternion(
             w_ * rhs.w_ - x_ * rhs.x_ - y_ * rhs.y_ - z_ * rhs.z_,
@@ -263,24 +263,21 @@ public:
     {
 #ifdef URHO3D_SSE
         __m128 q = _mm_loadu_ps(&w_);
-        q = _mm_shuffle_ps(q, q, _MM_SHUFFLE(0, 3, 2, 1));
+        q = _mm_shuffle_ps(q, q, _MM_SHUFFLE(0, 3, 2, 1));                          // NOLINT(hicpp-signed-bitwise)
         __m128 v = _mm_set_ps(0.f, rhs.z_, rhs.y_, rhs.x_);
-        const __m128 W = _mm_shuffle_ps(q, q, _MM_SHUFFLE(3, 3, 3, 3));
-        const __m128 a_yzx = _mm_shuffle_ps(q, q, _MM_SHUFFLE(3, 0, 2, 1));
-        __m128 x = _mm_mul_ps(q, _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 0, 2, 1)));
+        const __m128 W = _mm_shuffle_ps(q, q, _MM_SHUFFLE(3, 3, 3, 3));             // NOLINT(hicpp-signed-bitwise)
+        const __m128 a_yzx = _mm_shuffle_ps(q, q, _MM_SHUFFLE(3, 0, 2, 1));         // NOLINT(hicpp-signed-bitwise)
+        __m128 x = _mm_mul_ps(q, _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 0, 2, 1)));    // NOLINT(hicpp-signed-bitwise)
         __m128 qxv = _mm_sub_ps(x, _mm_mul_ps(a_yzx, v));
         __m128 Wv = _mm_mul_ps(W, v);
-        __m128 s = _mm_add_ps(qxv, _mm_shuffle_ps(Wv, Wv, _MM_SHUFFLE(3, 1, 0, 2)));
+        __m128 s = _mm_add_ps(qxv, _mm_shuffle_ps(Wv, Wv, _MM_SHUFFLE(3, 1, 0, 2)));    // NOLINT(hicpp-signed-bitwise)
         __m128 qs = _mm_mul_ps(q, s);
-        __m128 y = _mm_shuffle_ps(qs, qs, _MM_SHUFFLE(3, 1, 0, 2));
+        __m128 y = _mm_shuffle_ps(qs, qs, _MM_SHUFFLE(3, 1, 0, 2));                 // NOLINT(hicpp-signed-bitwise)
         s = _mm_sub_ps(_mm_mul_ps(a_yzx, s), y);
         s = _mm_add_ps(s, s);
         s = _mm_add_ps(s, v);
 
-        return Vector3(
-            _mm_cvtss_f32(s),
-            _mm_cvtss_f32(_mm_shuffle_ps(s, s, _MM_SHUFFLE(1, 1, 1, 1))),
-            _mm_cvtss_f32(_mm_movehl_ps(s, s)));
+        return Vector3(_mm_cvtss_f32(s), _mm_cvtss_f32(_mm_shuffle_ps(s, s, _MM_SHUFFLE(1, 1, 1, 1))), _mm_cvtss_f32(_mm_movehl_ps(s, s)));     // NOLINT(hicpp-signed-bitwise)
 #else
         Vector3 qVec(x_, y_, z_);
         Vector3 cross1(qVec.CrossProduct(rhs));
@@ -309,8 +306,8 @@ public:
 #ifdef URHO3D_SSE
         __m128 q = _mm_loadu_ps(&w_);
         __m128 n = _mm_mul_ps(q, q);
-        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(2, 3, 0, 1)));
-        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(0, 1, 2, 3)));
+        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(2, 3, 0, 1)));   // NOLINT(hicpp-signed-bitwise)
+        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(0, 1, 2, 3)));   // NOLINT(hicpp-signed-bitwise)
         __m128 e = _mm_rsqrt_ps(n);
         __m128 e3 = _mm_mul_ps(_mm_mul_ps(e, e), e);
         __m128 half = _mm_set1_ps(0.5f);
@@ -335,8 +332,8 @@ public:
 #ifdef URHO3D_SSE
         __m128 q = _mm_loadu_ps(&w_);
         __m128 n = _mm_mul_ps(q, q);
-        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(2, 3, 0, 1)));
-        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(0, 1, 2, 3)));
+        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(2, 3, 0, 1)));   // NOLINT(hicpp-signed-bitwise)
+        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(0, 1, 2, 3)));   // NOLINT(hicpp-signed-bitwise)
         __m128 e = _mm_rsqrt_ps(n);
         __m128 e3 = _mm_mul_ps(_mm_mul_ps(e, e), e);
         __m128 half = _mm_set1_ps(0.5f);
@@ -360,8 +357,8 @@ public:
 #ifdef URHO3D_SSE
         __m128 q = _mm_loadu_ps(&w_);
         __m128 n = _mm_mul_ps(q, q);
-        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(2, 3, 0, 1)));
-        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(0, 1, 2, 3)));
+        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(2, 3, 0, 1)));   // NOLINT(hicpp-signed-bitwise)
+        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(0, 1, 2, 3)));   // NOLINT(hicpp-signed-bitwise)
         return Quaternion(_mm_div_ps(_mm_xor_ps(q, _mm_castsi128_ps(_mm_set_epi32((int)0x80000000UL, (int)0x80000000UL, (int)0x80000000UL, 0))), n));
 #else
         float lenSquared = LengthSquared();
@@ -380,8 +377,8 @@ public:
 #ifdef URHO3D_SSE
         __m128 q = _mm_loadu_ps(&w_);
         __m128 n = _mm_mul_ps(q, q);
-        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(2, 3, 0, 1)));
-        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(0, 1, 2, 3)));
+        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(2, 3, 0, 1)));   // NOLINT(hicpp-signed-bitwise)
+        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(0, 1, 2, 3)));   // NOLINT(hicpp-signed-bitwise)
         return _mm_cvtss_f32(n);
 #else
         return w_ * w_ + x_ * x_ + y_ * y_ + z_ * z_;
@@ -395,8 +392,8 @@ public:
         __m128 q1 = _mm_loadu_ps(&w_);
         __m128 q2 = _mm_loadu_ps(&rhs.w_);
         __m128 n = _mm_mul_ps(q1, q2);
-        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(2, 3, 0, 1)));
-        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(0, 1, 2, 3)));
+        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(2, 3, 0, 1)));   // NOLINT(hicpp-signed-bitwise)
+        n = _mm_add_ps(n, _mm_shuffle_ps(n, n, _MM_SHUFFLE(0, 1, 2, 3)));   // NOLINT(hicpp-signed-bitwise)
         return _mm_cvtss_f32(n);
 #else
         return w_ * rhs.w_ + x_ * rhs.x_ + y_ * rhs.y_ + z_ * rhs.z_;

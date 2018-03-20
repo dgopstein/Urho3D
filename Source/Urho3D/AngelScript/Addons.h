@@ -122,7 +122,7 @@ protected:
     asITypeInfo      *objType;
     SArrayBuffer     *buffer;
     size_t            elementSize;
-    int               subTypeId{};
+    unsigned          subTypeId{};
 
     // Constructors
     CScriptArray(asITypeInfo *ot, void *buf); // Called from script when initialized with list
@@ -186,7 +186,7 @@ protected:
         double  m_valueFlt;
         void   *m_valueObj;
     };
-    int m_typeId;
+    unsigned m_typeId;
 };
 
 /// %Script dictionary class.

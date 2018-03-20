@@ -347,7 +347,7 @@ bool FileSystem::CreateDir(const String& pathName)
     bool success = (CreateDirectoryW(GetWideNativePath(RemoveTrailingSlash(pathName)).CString(), nullptr) == TRUE) ||
         (GetLastError() == ERROR_ALREADY_EXISTS);
 #else
-    bool success = mkdir(GetNativePath(RemoveTrailingSlash(pathName)).CString(), S_IRWXU) == 0 || errno == EEXIST;
+    bool success = mkdir(GetNativePath(RemoveTrailingSlash(pathName)).CString(), S_IRWXU) == 0 || errno == EEXIST;  // NOLINT(hicpp-signed-bitwise)
 #endif
 
     if (success)
@@ -617,7 +617,7 @@ bool FileSystem::FileExists(const String& fileName) const
         return false;
 #else
     struct stat st{};
-    if (stat(fixedName.CString(), &st) || st.st_mode & S_IFDIR)
+    if (stat(fixedName.CString(), &st) || st.st_mode & (unsigned)S_IFDIR)
         return false;
 #endif
 
@@ -671,7 +671,7 @@ bool FileSystem::DirExists(const String& pathName) const
         return false;
 #else
     struct stat st{};
-    if (stat(fixedName.CString(), &st) || !(st.st_mode & S_IFDIR))
+    if (stat(fixedName.CString(), &st) || !(st.st_mode & (unsigned)S_IFDIR))
         return false;
 #endif
 
@@ -882,7 +882,7 @@ void FileSystem::ScanDirInternal(Vector<String>& result, String path, const Stri
             String pathAndName = path + fileName;
             if (!stat(pathAndName.CString(), &st))
             {
-                if (st.st_mode & S_IFDIR)
+                if (st.st_mode & (unsigned)S_IFDIR)
                 {
                     if (flags & SCAN_DIRS)
                         result.Push(deltaPath + fileName);

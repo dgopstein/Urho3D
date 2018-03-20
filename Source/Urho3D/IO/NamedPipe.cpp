@@ -230,8 +230,8 @@ bool NamedPipe::Open(const String& pipeName, bool isServer)
         mkfifo(serverReadName.CString(), 0660);
         mkfifo(clientReadName.CString(), 0660);
 
-        readHandle_ = open(serverReadName.CString(), O_RDONLY | O_NDELAY);
-        writeHandle_ = open(clientReadName.CString(), O_WRONLY | O_NDELAY);
+        readHandle_ = open(serverReadName.CString(), O_RDONLY | O_NDELAY);      // NOLINT(hicpp-signed-bitwise)
+        writeHandle_ = open(clientReadName.CString(), O_WRONLY | O_NDELAY);     // NOLINT(hicpp-signed-bitwise)
 
         if (readHandle_ == -1 && writeHandle_ == -1)
         {
@@ -252,8 +252,8 @@ bool NamedPipe::Open(const String& pipeName, bool isServer)
     }
     else
     {
-        readHandle_ = open(clientReadName.CString(), O_RDONLY | O_NDELAY);
-        writeHandle_ = open(serverReadName.CString(), O_WRONLY | O_NDELAY);
+        readHandle_ = open(clientReadName.CString(), O_RDONLY | O_NDELAY);      // NOLINT(hicpp-signed-bitwise)
+        writeHandle_ = open(serverReadName.CString(), O_WRONLY | O_NDELAY);     // NOLINT(hicpp-signed-bitwise)
         if (readHandle_ == -1 && writeHandle_ == -1)
         {
             URHO3D_LOGERROR("Failed to connect to named pipe " + pipeName);
@@ -277,9 +277,9 @@ unsigned NamedPipe::Read(void* dest, unsigned size)
     if (readHandle_ == -1 && writeHandle_ != -1)
     {
         if (isServer_)
-            readHandle_ = open((pipePath + pipeName_ + "SR").CString(), O_RDONLY | O_NDELAY);
+            readHandle_ = open((pipePath + pipeName_ + "SR").CString(), O_RDONLY | O_NDELAY);   // NOLINT(hicpp-signed-bitwise)
         else
-            readHandle_ = open((pipePath + pipeName_ + "CR").CString(), O_RDONLY | O_NDELAY);
+            readHandle_ = open((pipePath + pipeName_ + "CR").CString(), O_RDONLY | O_NDELAY);   // NOLINT(hicpp-signed-bitwise)
     }
 
     if (readHandle_ != -1)
@@ -297,9 +297,9 @@ unsigned NamedPipe::Write(const void* data, unsigned size)
     if (writeHandle_ == -1 && readHandle_ != -1)
     {
         if (isServer_)
-            writeHandle_ = open((pipePath + pipeName_ + "CR").CString(), O_WRONLY | O_NDELAY);
+            writeHandle_ = open((pipePath + pipeName_ + "CR").CString(), O_WRONLY | O_NDELAY);  // NOLINT(hicpp-signed-bitwise)
         else
-            writeHandle_ = open((pipePath + pipeName_ + "SR").CString(), O_WRONLY | O_NDELAY);
+            writeHandle_ = open((pipePath + pipeName_ + "SR").CString(), O_WRONLY | O_NDELAY);  // NOLINT(hicpp-signed-bitwise)
     }
 
     // Loop until all bytes written in case of partial write
@@ -355,16 +355,16 @@ bool NamedPipe::IsEof() const
     if (readHandle_ == -1 && writeHandle_ != -1)
     {
         if (isServer_)
-            readHandle_ = open((pipePath + pipeName_ + "SR").CString(), O_RDONLY | O_NDELAY);
+            readHandle_ = open((pipePath + pipeName_ + "SR").CString(), O_RDONLY | O_NDELAY);   // NOLINT(hicpp-signed-bitwise)
         else
-            readHandle_ = open((pipePath + pipeName_ + "CR").CString(), O_RDONLY | O_NDELAY);
+            readHandle_ = open((pipePath + pipeName_ + "CR").CString(), O_RDONLY | O_NDELAY);   // NOLINT(hicpp-signed-bitwise)
     }
 
     if (readHandle_ != -1)
     {
         fd_set set;
-        FD_ZERO(&set);      // NOLINT(modernize-use-bool-literals)
-        FD_SET(readHandle_, &set);
+        FD_ZERO(&set);              // NOLINT(modernize-use-bool-literals)
+        FD_SET(readHandle_, &set);  // NOLINT(hicpp-signed-bitwise)
 
         struct timeval timeout{0, 1000};    // 1ms timeout for select
 

@@ -35,7 +35,7 @@ namespace Urho3D
 
 LogicComponent::LogicComponent(Context* context) :
     Component(context),
-    updateEventMask_(USE_UPDATE | USE_POSTUPDATE | USE_FIXEDUPDATE | USE_FIXEDPOSTUPDATE),
+    updateEventMask_((unsigned char)((unsigned)USE_UPDATE | USE_POSTUPDATE | USE_FIXEDUPDATE | USE_FIXEDPOSTUPDATE)),
     currentEventMask_(0),
     delayedStartCalled_(false)
 {
